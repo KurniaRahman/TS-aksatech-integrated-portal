@@ -664,7 +664,7 @@ export function FlightLogContainer({
                 .filter((d) => matraFilter === "ALL" || d.matra === matraFilter)
                 .map((d) => (
                   <option key={d.id} value={d.id}>
-                    {d.serial_number} — {d.model_name}
+                    {d.serial_number}
                   </option>
                 ))}
             </select>
@@ -678,8 +678,8 @@ export function FlightLogContainer({
               className="w-full text-xs sm:text-sm px-3.5 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#1F77C5]/20 focus:border-[#1F77C5] outline-none cursor-pointer font-medium bg-white text-slate-700"
             >
               <option value="ALL">Semua Jenis Misi</option>
-              <option value="TRAINING">🎓 Latihan (Training)</option>
-              <option value="MISSION">🎯 Misi (Mission)</option>
+              <option value="TRAINING">Latihan</option>
+              <option value="MISSION">Misi</option>
             </select>
           </div>
 
@@ -938,7 +938,7 @@ export function FlightLogContainer({
                     .filter((d) => d.matra === formMatra)
                     .map((d) => (
                       <option key={d.id} value={d.id}>
-                        {d.serial_number} — {d.model_name}
+                        {d.serial_number}
                       </option>
                     ))}
                 </select>
@@ -956,8 +956,7 @@ export function FlightLogContainer({
               {/* Nama Pilot / Penerbang (Opsional, Default ke Akun Pengguna) */}
               <div className="space-y-1">
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center justify-between">
-                  <span>Nama Pilot / Penerbang</span>
-                  <span className="text-[11px] text-slate-400 font-normal">Opsional (Default: Akun Anda)</span>
+                  <span>Nama Pilot</span>
                 </label>
                 <div className="relative">
                   <UserIcon className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />

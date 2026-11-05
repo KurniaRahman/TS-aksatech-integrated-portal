@@ -1427,7 +1427,7 @@ export function DroneLogbookContainer({
                     .filter((d) => d.matra === formMatra)
                     .map((d) => (
                       <option key={d.id} value={d.id}>
-                        {d.serial_number} — {d.model_name} ({d.status === "READY" ? "Siap" : "Servis"})
+                        {d.serial_number} ({d.status === "READY" ? "Siap" : "Servis"})
                       </option>
                     ))}
                 </select>
