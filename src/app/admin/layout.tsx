@@ -26,6 +26,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         navItems={adminNavItems} 
         userName={session.user.name || session.user.email || "Admin"} 
         userRole="Administrator"
+        userMatra={(session.user as any).matra || null}
       />
       
       <main className="flex-1 overflow-y-auto w-full">
