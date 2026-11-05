@@ -556,10 +556,24 @@ export function FlightLogContainer({
         </div>
       </div>
 
-      {/* 2. Toolbar Filter & Action Buttons */}
-      <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/90 shadow-sm space-y-4">
-        {/* Baris 1: Filter Cepat Tanggal Preset & Tombol Tambah */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+      {/* 2. Global Quick Action (Catat Penerbangan - Konsisten dengan Catat Perawatan) */}
+      {!isGuest && (
+        <div className="flex items-center gap-2.5 w-full sm:w-auto sm:justify-end">
+          <button
+            type="button"
+            onClick={() => openAddModal()}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#0B2545] to-[#1F77C5] text-white text-xs font-bold shadow-sm hover:opacity-95 transition-all active:scale-[0.98] w-full sm:w-auto"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Catat Penerbangan</span>
+          </button>
+        </div>
+      )}
+
+      {/* 3. Toolbar Filter & Action Buttons */}
+      <div className="bg-white rounded-3xl p-4 sm:p-6 border border-slate-200/90 shadow-sm space-y-4">
+        {/* Baris 1: Filter Cepat Tanggal Preset & Export Excel */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-1.5 flex-wrap">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mr-1 flex items-center gap-1">
               <CalendarIcon className="w-3.5 h-3.5" /> Rentang:
@@ -586,28 +600,17 @@ export function FlightLogContainer({
             ))}
           </div>
 
-          <div className="flex items-center gap-2 self-start lg:self-center">
+          <div className="flex items-center gap-2 self-start sm:self-center w-full sm:w-auto justify-end">
             <button
               type="button"
               onClick={exportToExcel}
               disabled={isExporting || filteredLogs.length === 0}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-blue-200 transition-all shadow-xs disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
+              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-blue-200 transition-all shadow-xs disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] w-full sm:w-auto"
               title={filteredLogs.length === 0 ? "Tidak ada data untuk diekspor" : "Ekspor rekap log penerbangan ke Excel"}
             >
               <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
               <span>{isExporting ? "Mengunduh..." : "Export Excel"}</span>
             </button>
-
-            {!isGuest && (
-              <button
-                type="button"
-                onClick={() => openAddModal()}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-[#1F77C5] text-white hover:bg-blue-600 transition-all shadow-xs active:scale-[0.98]"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Catat Penerbangan</span>
-              </button>
-            )}
           </div>
         </div>
 
