@@ -31,6 +31,7 @@ export default async function DroneLogbookPage() {
   }
 
   const userRole = session.user.role as "STAFF" | "PM" | "GUEST"
+  const userMatra = (session.user as any).matra || null
   const isSupervisor = userRole === "PM"
   const isGuest = userRole === "GUEST"
 
@@ -121,9 +122,10 @@ export default async function DroneLogbookPage() {
         {/* Client Logbook & Fleet Container */}
         <DroneLogbookContainer
           userRole={userRole}
+          userMatra={userMatra}
           currentUserId={session.user.id}
-          initialDrones={initialDrones}
-          initialLogs={initialLogs}
+          initialDrones={initialDrones as any}
+          initialLogs={initialLogs as any}
           initialStartDate={startStr}
           initialEndDate={todayStr}
           todayStr={todayStr}

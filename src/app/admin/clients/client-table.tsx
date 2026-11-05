@@ -8,12 +8,14 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { ClientFormDialog } from "./client-form-dialog"
 import { toggleClientStatus } from "./actions"
 import { Edit, UserX, UserCheck, Plus, Filter, RotateCcw, Search, Mail, Shield } from "lucide-react"
+import { MatraBadge } from "@/components/ui/matra-badge"
 
 type Client = {
   id: string
   full_name: string
   email: string
   role: string
+  matra?: string | null
   is_active: boolean
   created_at: Date
 }
@@ -116,6 +118,13 @@ export function ClientTable({ clients }: { clients: Client[] }) {
             <Shield className="w-3 h-3" />
             Guest (External)
           </span>
+        ),
+      },
+      {
+        accessorKey: "matra",
+        header: "Matra Akses",
+        cell: ({ row }) => (
+          <MatraBadge matra={row.original.matra} size="sm" />
         ),
       },
       {

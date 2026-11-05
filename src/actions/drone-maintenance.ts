@@ -19,7 +19,7 @@ function validateDateString(dateStr?: string): string {
 /**
  * Mengambil seluruh data unit armada drone beserta rekap servis terakhir
  */
-export async function getDrones() {
+export async function getDrones(filters?: { matra?: string }) {
   const session = await auth()
   if (!session?.user?.id) throw new Error("Unauthorized")
 
@@ -27,7 +27,25 @@ export async function getDrones() {
     throw new Error("Akses ditolak")
   }
 
+  // Jika role GUEST, batasi ketat berdasarkan matra institusi pengguna
+  let scopedMatra: string | undefined = undefined
+  if (session.user.role === "GUEST") {
+    const currentUser = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: { matra: true },
+    })
+    scopedMatra = currentUser?.matra || (session.user as any).matra || undefined
+  } else if (filters?.matra && filters.matra !== "ALL") {
+    scopedMatra = filters.matra
+  }
+
+  const whereClause: any = {}
+  if (scopedMatra) {
+    whereClause.matra = scopedMatra
+  }
+
   const drones = await db.drone.findMany({
+    where: whereClause,
     include: {
       _count: {
         select: { maintenance_logs: true },
@@ -46,6 +64,7 @@ export async function getDrones() {
       },
     },
     orderBy: [
+      { matra: "asc" },
       { model_name: "asc" },
       { serial_number: "asc" },
     ],
@@ -60,6 +79,7 @@ export async function getDrones() {
 export async function createDrone(data: {
   serial_number: string
   model_name: string
+  matra?: string
   notes?: string
 }) {
   const session = await auth()
@@ -80,6 +100,8 @@ export async function createDrone(data: {
     throw new Error("Model drone wajib diisi")
   }
 
+  const cleanMatra = data.matra?.trim() || "TNI-AU"
+
   // Cek duplikasi Serial Number
   const existing = await db.drone.findUnique({
     where: { serial_number: cleanSN },
@@ -93,12 +115,14 @@ export async function createDrone(data: {
     data: {
       serial_number: cleanSN,
       model_name: cleanModel,
+      matra: cleanMatra,
       status: "READY",
       notes: data.notes?.trim() || null,
     },
   })
 
   revalidatePath("/dashboard/drones")
+  revalidatePath("/dashboard/flights")
   return { success: true, data: newDrone }
 }
 
@@ -111,6 +135,7 @@ export async function updateDrone(
   data: {
     serial_number: string
     model_name: string
+    matra?: string
     notes?: string
   }
 ) {
@@ -146,17 +171,22 @@ export async function updateDrone(
     throw new Error(`Serial Number "${cleanSN}" sudah digunakan oleh unit lain`)
   }
 
-  // Status drone tidak diubah di sini (status hanya diubah melalui pencatatan servis)
+  const updateData: any = {
+    serial_number: cleanSN,
+    model_name: cleanModel,
+    notes: data.notes?.trim() || null,
+  }
+  if (data.matra?.trim()) {
+    updateData.matra = data.matra.trim()
+  }
+
   const updated = await db.drone.update({
     where: { id },
-    data: {
-      serial_number: cleanSN,
-      model_name: cleanModel,
-      notes: data.notes?.trim() || null,
-    },
+    data: updateData,
   })
 
   revalidatePath("/dashboard/drones")
+  revalidatePath("/dashboard/flights")
   return { success: true, data: updated }
 }
 
@@ -196,6 +226,7 @@ export async function getDroneMaintenanceLogs(filters?: {
   startDate?: string
   endDate?: string
   type?: string
+  matra?: string
 }) {
   const session = await auth()
   if (!session?.user?.id) throw new Error("Unauthorized")
@@ -204,7 +235,26 @@ export async function getDroneMaintenanceLogs(filters?: {
     throw new Error("Akses ditolak")
   }
 
+  // Jika role GUEST, batasi ketat berdasarkan matra institusi pengguna
+  let scopedMatra: string | undefined = undefined
+  if (session.user.role === "GUEST") {
+    const currentUser = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: { matra: true },
+    })
+    scopedMatra = currentUser?.matra || (session.user as any).matra || undefined
+  } else if (filters?.matra && filters.matra !== "ALL") {
+    scopedMatra = filters.matra
+  }
+
   const whereClause: any = {}
+
+  if (scopedMatra) {
+    whereClause.drone = {
+      ...(whereClause.drone || {}),
+      matra: scopedMatra,
+    }
+  }
 
   if (filters?.droneId && filters.droneId !== "ALL") {
     whereClause.drone_id = filters.droneId
@@ -233,6 +283,7 @@ export async function getDroneMaintenanceLogs(filters?: {
           id: true,
           serial_number: true,
           model_name: true,
+          matra: true,
           status: true,
         },
       },

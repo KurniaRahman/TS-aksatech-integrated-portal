@@ -13,6 +13,7 @@ type Client = {
   full_name: string
   email: string
   role: string
+  matra?: string | null
   is_active: boolean
 }
 
@@ -148,6 +149,25 @@ export function ClientFormDialog({
               {clientToEdit && (
                 <p className="text-[11px] text-slate-400">Pastikan alamat email aktif untuk akses login klien.</p>
               )}
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                Matra Institusi / Klien
+              </label>
+              <select
+                name="matra"
+                defaultValue={clientToEdit?.matra || "TNI-AU"}
+                required
+                className="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#1F77C5]/20 focus:border-[#1F77C5] outline-none font-semibold bg-white text-slate-800"
+              >
+                <option value="TNI-AU">TNI-AU (Angkatan Udara)</option>
+                <option value="TNI-AL">TNI-AL (Angkatan Laut)</option>
+                <option value="TNI-AD">TNI-AD (Angkatan Darat)</option>
+              </select>
+              <p className="text-[11px] text-slate-400">
+                Klien hanya dapat memantau katalog armada dan log penerbangan/perawatan pada matra yang dipilih.
+              </p>
             </div>
 
             {/* Hak Akses Info Banner (Role otomatis Guest) */}

@@ -37,11 +37,13 @@ import {
   Layers,
   Info
 } from "lucide-react"
+import { MatraBadge } from "@/components/ui/matra-badge"
 
 export type DroneItem = {
   id: string
   serial_number: string
   model_name: string
+  matra?: string | null
   status: string
   notes: string | null
   _count: {
@@ -71,6 +73,7 @@ export type MaintenanceLogItem = {
     id: string
     serial_number: string
     model_name: string
+    matra?: string | null
     status: string
   }
   user: {
@@ -83,6 +86,7 @@ export type MaintenanceLogItem = {
 
 interface DroneLogbookContainerProps {
   userRole: "STAFF" | "PM" | "GUEST"
+  userMatra?: string | null
   currentUserId: string
   initialDrones: DroneItem[]
   initialLogs: MaintenanceLogItem[]
@@ -93,6 +97,7 @@ interface DroneLogbookContainerProps {
 
 export function DroneLogbookContainer({
   userRole,
+  userMatra,
   currentUserId,
   initialDrones,
   initialLogs,
@@ -111,11 +116,13 @@ export function DroneLogbookContainer({
   const [logs, setLogs] = useState<MaintenanceLogItem[]>(initialLogs)
 
   // Filters for Fleet Tab
+  const [fleetMatraFilter, setFleetMatraFilter] = useState<string>(userMatra || "ALL")
   const [fleetModelFilter, setFleetModelFilter] = useState<string>("ALL")
   const [fleetStatusFilter, setFleetStatusFilter] = useState<string>("ALL")
   const [fleetSearchQuery, setFleetSearchQuery] = useState<string>("")
 
   // Filters for Logs Tab
+  const [logMatraFilter, setLogMatraFilter] = useState<string>(userMatra || "ALL")
   const [logDroneFilter, setLogDroneFilter] = useState<string>("ALL")
   const [logTypeFilter, setLogTypeFilter] = useState<string>("ALL")
   const [logSearchQuery, setLogSearchQuery] = useState<string>("")
@@ -132,6 +139,7 @@ export function DroneLogbookContainer({
   // 1. Modal Catat / Edit Perawatan Drone
   const [isLogModalOpen, setIsLogModalOpen] = useState(false)
   const [editLogTarget, setEditLogTarget] = useState<MaintenanceLogItem | null>(null)
+  const [formMatra, setFormMatra] = useState<string>(userMatra || "TNI-AU")
   const [formDroneId, setFormDroneId] = useState<string>("")
   const [formDate, setFormDate] = useState<string>(todayStr)
   const [formType, setFormType] = useState<string>("INSPECTION")
@@ -145,6 +153,7 @@ export function DroneLogbookContainer({
   // 2. Modal Tambah / Edit Master Data Drone
   const [isDroneModalOpen, setIsDroneModalOpen] = useState(false)
   const [editDroneTarget, setEditDroneTarget] = useState<DroneItem | null>(null)
+  const [formDroneMatra, setFormDroneMatra] = useState<string>("TNI-AU")
   const [formModel, setFormModel] = useState<string>("Model AR")
   const [formDroneNumber, setFormDroneNumber] = useState<string>("")
   const [droneFormLoading, setDroneFormLoading] = useState(false)
@@ -173,13 +182,20 @@ export function DroneLogbookContainer({
     }
   }
 
-  const fetchLogs = (start: string, end: string, droneId: string = logDroneFilter, type: string = logTypeFilter) => {
+  const fetchLogs = (
+    start: string,
+    end: string,
+    droneId: string = logDroneFilter,
+    type: string = logTypeFilter,
+    matra: string = logMatraFilter
+  ) => {
     startTransition(async () => {
       const res = await getDroneMaintenanceLogs({
         startDate: start,
         endDate: end,
         droneId: droneId !== "ALL" ? droneId : undefined,
         type: type !== "ALL" ? type : undefined,
+        matra: matra !== "ALL" ? matra : undefined,
       })
       if (res.success && res.data) {
         setLogs(res.data as MaintenanceLogItem[])
@@ -211,30 +227,54 @@ export function DroneLogbookContainer({
 
     setStartDate(startStr)
     setEndDate(endStr)
-    fetchLogs(startStr, endStr)
+    fetchLogs(startStr, endStr, logDroneFilter, logTypeFilter, logMatraFilter)
   }
 
   const handleCustomRangeSearch = () => {
     setActivePreset("custom")
-    fetchLogs(startDate, endDate)
+    fetchLogs(startDate, endDate, logDroneFilter, logTypeFilter, logMatraFilter)
+  }
+
+  const handleLogMatraFilterChange = (matra: string) => {
+    setLogMatraFilter(matra)
+    setLogDroneFilter("ALL")
+    fetchLogs(startDate, endDate, "ALL", logTypeFilter, matra)
   }
 
   const handleLogDroneFilterChange = (id: string) => {
     setLogDroneFilter(id)
-    fetchLogs(startDate, endDate, id, logTypeFilter)
+    fetchLogs(startDate, endDate, id, logTypeFilter, logMatraFilter)
   }
 
   const handleLogTypeFilterChange = (type: string) => {
     setLogTypeFilter(type)
-    fetchLogs(startDate, endDate, logDroneFilter, type)
+    fetchLogs(startDate, endDate, logDroneFilter, type, logMatraFilter)
   }
 
   // ----------------------------------------------------
   // LOG MODAL HANDLERS
   // ----------------------------------------------------
+  const handleFormMatraChange = (newMatra: string) => {
+    setFormMatra(newMatra)
+    const matching = drones.filter((d) => d.matra === newMatra)
+    if (matching.length > 0) {
+      setFormDroneId(matching[0].id)
+    } else {
+      setFormDroneId("")
+    }
+  }
+
   const openAddLogModal = (preselectedDroneId?: string) => {
     setEditLogTarget(null)
-    setFormDroneId(preselectedDroneId || (drones.length > 0 ? drones[0].id : ""))
+    const targetDrone = preselectedDroneId ? drones.find((d) => d.id === preselectedDroneId) : null
+    const initialMatra = targetDrone?.matra || userMatra || "TNI-AU"
+    setFormMatra(initialMatra)
+
+    const availableDrones = drones.filter((d) => !initialMatra || d.matra === initialMatra)
+    setFormDroneId(
+      preselectedDroneId ||
+        (availableDrones.length > 0 ? availableDrones[0].id : drones.length > 0 ? drones[0].id : "")
+    )
     setFormDate(todayStr)
     setFormType("INSPECTION")
     setFormIssue("")
@@ -247,10 +287,12 @@ export function DroneLogbookContainer({
 
   const openEditLogModal = (log: MaintenanceLogItem) => {
     setEditLogTarget(log)
+    setFormMatra(log.drone.matra || userMatra || "TNI-AU")
     setFormDroneId(log.drone_id)
-    const dateStr = typeof log.maintenance_date === "string"
-      ? log.maintenance_date.split("T")[0]
-      : getDateStringWIB(log.maintenance_date)
+    const dateStr =
+      typeof log.maintenance_date === "string"
+        ? log.maintenance_date.split("T")[0]
+        : getDateStringWIB(log.maintenance_date)
     setFormDate(dateStr)
     setFormType(log.maintenance_type)
     setFormIssue(log.issue_indication)
@@ -349,6 +391,7 @@ export function DroneLogbookContainer({
 
   const openAddDroneModal = () => {
     setEditDroneTarget(null)
+    setFormDroneMatra("TNI-AU")
     setFormModel("Model AR")
     setFormDroneNumber("")
     setDroneFormError(null)
@@ -361,6 +404,7 @@ export function DroneLogbookContainer({
       return
     }
     setEditDroneTarget(drone)
+    setFormDroneMatra(drone.matra || "TNI-AU")
     const validModel = ["Model AR", "Model TR", "Model Revolver"].includes(drone.model_name)
       ? drone.model_name
       : "Model AR"
@@ -402,6 +446,7 @@ export function DroneLogbookContainer({
         const res = await updateDrone(editDroneTarget.id, {
           serial_number: fullSN,
           model_name: formModel,
+          matra: formDroneMatra,
         })
         if (res.success && res.data) {
           setDrones(prev => prev.map(d => d.id === editDroneTarget.id ? { ...d, ...res.data } : d))
@@ -411,6 +456,7 @@ export function DroneLogbookContainer({
         const res = await createDrone({
           serial_number: fullSN,
           model_name: formModel,
+          matra: formDroneMatra,
         })
         if (res.success && res.data) {
           await refreshDrones()
@@ -470,6 +516,7 @@ export function DroneLogbookContainer({
           "Tanggal Perawatan": dateStr,
           "Serial Number (SN)": item.drone.serial_number,
           "Model Drone": item.drone.model_name,
+          "Matra": item.drone.matra || "-",
           "Jenis Perawatan": typeLabel,
           "Indikasi Masalah / Kendala": item.issue_indication,
           "Tindakan Penanganan": item.action_taken,
@@ -485,6 +532,7 @@ export function DroneLogbookContainer({
         { wch: 25 },
         { wch: 18 },
         { wch: 20 },
+        { wch: 15 },
         { wch: 22 },
         { wch: 40 },
         { wch: 45 },
@@ -508,13 +556,15 @@ export function DroneLogbookContainer({
   // ----------------------------------------------------
   // 1. Filtered Fleet
   const filteredDrones = drones.filter(d => {
+    if (fleetMatraFilter !== "ALL" && d.matra !== fleetMatraFilter) return false
     if (fleetModelFilter !== "ALL" && d.model_name !== fleetModelFilter) return false
     if (fleetStatusFilter !== "ALL" && d.status !== fleetStatusFilter) return false
     if (fleetSearchQuery.trim()) {
       const q = fleetSearchQuery.toLowerCase()
       const matchSN = d.serial_number.toLowerCase().includes(q)
       const matchModel = d.model_name.toLowerCase().includes(q)
-      if (!matchSN && !matchModel) return false
+      const matchMatra = (d.matra || "").toLowerCase().includes(q)
+      if (!matchSN && !matchModel && !matchMatra) return false
     }
     return true
   })
@@ -524,16 +574,18 @@ export function DroneLogbookContainer({
 
   // 2. Filtered Logs
   const filteredLogs = logs.filter(l => {
+    if (logMatraFilter !== "ALL" && l.drone.matra !== logMatraFilter) return false
     if (logDroneFilter !== "ALL" && l.drone_id !== logDroneFilter) return false
     if (logTypeFilter !== "ALL" && l.maintenance_type !== logTypeFilter) return false
     if (logSearchQuery.trim()) {
       const q = logSearchQuery.toLowerCase()
       const matchSN = l.drone.serial_number.toLowerCase().includes(q)
+      const matchMatra = (l.drone.matra || "").toLowerCase().includes(q)
       const matchIssue = l.issue_indication.toLowerCase().includes(q)
       const matchAction = l.action_taken.toLowerCase().includes(q)
       const matchNotes = (l.additional_notes || "").toLowerCase().includes(q)
       const matchUser = l.user.full_name.toLowerCase().includes(q)
-      if (!matchSN && !matchIssue && !matchAction && !matchNotes && !matchUser) return false
+      if (!matchSN && !matchMatra && !matchIssue && !matchAction && !matchNotes && !matchUser) return false
     }
     return true
   })
@@ -696,7 +748,53 @@ export function DroneLogbookContainer({
       {activeTab === "fleet" && (
         <div className="space-y-5">
           {/* Fleet Filter Bar */}
-          <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200/90 space-y-3">
+          <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200/90 space-y-3.5">
+            {/* Row 1: Matra Filter Pills */}
+            <div className="flex items-center gap-2 flex-wrap pb-2 border-b border-slate-100">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mr-1">
+                Matra:
+              </span>
+              {isGuest && userMatra ? (
+                <div className="flex items-center gap-2">
+                  <MatraBadge matra={userMatra} size="md" />
+                  <span className="text-xs text-slate-400 italic">(Akses Guest dibatasi untuk {userMatra})</span>
+                </div>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setFleetMatraFilter("ALL")}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                      fleetMatraFilter === "ALL"
+                        ? "bg-slate-900 text-white shadow-xs"
+                        : "bg-slate-100 text-slate-600 hover:bg-slate-200/70"
+                    }`}
+                  >
+                    Semua Matra ({drones.length})
+                  </button>
+                  {["TNI-AU", "TNI-AL", "TNI-AD"].map((m) => {
+                    const count = drones.filter((d) => d.matra === m).length
+                    const isSelected = fleetMatraFilter === m
+                    return (
+                      <button
+                        key={m}
+                        type="button"
+                        onClick={() => setFleetMatraFilter(m)}
+                        className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
+                          isSelected
+                            ? "bg-white border-[#1F77C5] ring-2 ring-[#1F77C5]/20 shadow-xs"
+                            : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+                        }`}
+                      >
+                        <MatraBadge matra={m} size="sm" />
+                        <span className="text-xs font-mono text-slate-500 font-semibold">({count})</span>
+                      </button>
+                    )
+                  })}
+                </>
+              )}
+            </div>
+
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               {/* Model Tabs */}
               <div className="flex items-center gap-1.5 flex-wrap">
@@ -712,10 +810,10 @@ export function DroneLogbookContainer({
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200/70"
                     }`}
                 >
-                  Semua ({drones.length})
+                  Semua ({drones.filter(d => fleetMatraFilter === "ALL" || d.matra === fleetMatraFilter).length})
                 </button>
                 {modelsList.map(model => {
-                  const count = drones.filter(d => d.model_name === model).length
+                  const count = drones.filter(d => d.model_name === model && (fleetMatraFilter === "ALL" || d.matra === fleetMatraFilter)).length
                   return (
                     <button
                       key={model}
@@ -810,13 +908,14 @@ export function DroneLogbookContainer({
                       {/* Card Header: SN & Status Badge */}
                       <div className="flex items-start justify-between gap-2">
                         <div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <span className="font-mono text-base font-extrabold text-slate-900 tracking-tight">
                               {drone.serial_number}
                             </span>
                             <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
                               {drone.model_name}
                             </span>
+                            <MatraBadge matra={drone.matra} size="sm" />
                           </div>
                           {drone.notes && (
                             <p className="text-xs text-slate-400 mt-1 line-clamp-1">{drone.notes}</p>
@@ -1008,22 +1107,42 @@ export function DroneLogbookContainer({
               </div>
             </div>
 
-            {/* Middle Row: Filter Drone & Search */}
+            {/* Middle Row: Filter Matra, Drone & Search */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-slate-100">
-              {/* Drone SN Filter Selector */}
-              <div className="relative w-full sm:w-64">
-                <select
-                  value={logDroneFilter}
-                  onChange={(e) => handleLogDroneFilterChange(e.target.value)}
-                  className="w-full text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl px-3 py-2 pr-8 shadow-xs focus:ring-2 focus:ring-[#1F77C5]/20 focus:border-[#1F77C5] outline-none cursor-pointer"
-                >
-                  <option value="ALL">Semua Drone ({drones.length} Unit)</option>
-                  {drones.map(d => (
-                    <option key={d.id} value={d.id}>
-                      {d.serial_number} — {d.model_name}
+              <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap w-full sm:w-auto">
+                {/* Matra Filter (Jika bukan Guest yang dibatasi) */}
+                {(!isGuest || !userMatra) && (
+                  <select
+                    value={logMatraFilter}
+                    onChange={(e) => handleLogMatraFilterChange(e.target.value)}
+                    className="text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl px-3 py-2 shadow-xs focus:ring-2 focus:ring-[#1F77C5]/20 focus:border-[#1F77C5] outline-none cursor-pointer w-full sm:w-36"
+                  >
+                    <option value="ALL">Semua Matra</option>
+                    <option value="TNI-AU">TNI-AU</option>
+                    <option value="TNI-AL">TNI-AL</option>
+                    <option value="TNI-AD">TNI-AD</option>
+                  </select>
+                )}
+
+                {/* Drone SN Filter Selector */}
+                <div className="relative w-full sm:w-64">
+                  <select
+                    value={logDroneFilter}
+                    onChange={(e) => handleLogDroneFilterChange(e.target.value)}
+                    className="w-full text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl px-3 py-2 pr-8 shadow-xs focus:ring-2 focus:ring-[#1F77C5]/20 focus:border-[#1F77C5] outline-none cursor-pointer"
+                  >
+                    <option value="ALL">
+                      Semua Drone ({drones.filter((d) => logMatraFilter === "ALL" || d.matra === logMatraFilter).length} Unit)
                     </option>
-                  ))}
-                </select>
+                    {drones
+                      .filter((d) => logMatraFilter === "ALL" || d.matra === logMatraFilter)
+                      .map((d) => (
+                        <option key={d.id} value={d.id}>
+                          {d.serial_number} — {d.model_name}
+                        </option>
+                      ))}
+                  </select>
+                </div>
               </div>
 
               {/* Search Box */}
@@ -1110,6 +1229,8 @@ export function DroneLogbookContainer({
                         <span className="text-xs font-semibold text-slate-500">
                           {item.drone.model_name}
                         </span>
+
+                        <MatraBadge matra={item.drone.matra} size="sm" />
 
                         <span>•</span>
 
@@ -1253,10 +1374,48 @@ export function DroneLogbookContainer({
             )}
 
             <form onSubmit={handleLogSubmit} className="space-y-4">
-              {/* Pilih Serial Number Drone */}
+              {/* Opsi Bertingkat 1: Pilih Matra */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center justify-between">
+                  <span>1. Pilih Matra *</span>
+                  {isGuest && userMatra && (
+                    <span className="text-[11px] text-slate-400 font-normal">Terkunci untuk akun Guest</span>
+                  )}
+                </label>
+                {isGuest && userMatra ? (
+                  <div className="py-1">
+                    <MatraBadge matra={userMatra} size="md" />
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-3 gap-2">
+                    {["TNI-AU", "TNI-AL", "TNI-AD"].map((m) => {
+                      const isSelected = formMatra === m
+                      return (
+                        <button
+                          key={m}
+                          type="button"
+                          onClick={() => handleFormMatraChange(m)}
+                          className={`flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl border text-xs font-bold transition-all ${
+                            isSelected
+                              ? "bg-white border-[#1F77C5] ring-2 ring-[#1F77C5]/20 shadow-xs"
+                              : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-white"
+                          }`}
+                        >
+                          <MatraBadge matra={m} size="sm" />
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Opsi Bertingkat 2: Pilih Serial Number Drone */}
               <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  Serial Number (SN) Drone *
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center justify-between">
+                  <span>2. Serial Number (SN) Drone *</span>
+                  <span className="text-[11px] font-normal text-slate-400">
+                    ({drones.filter((d) => d.matra === formMatra).length} Unit Terdaftar)
+                  </span>
                 </label>
                 <select
                   value={formDroneId}
@@ -1264,12 +1423,14 @@ export function DroneLogbookContainer({
                   className="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#1F77C5]/20 focus:border-[#1F77C5] outline-none cursor-pointer font-semibold text-slate-800 bg-white"
                   required
                 >
-                  <option value="" disabled>-- Pilih Unit Drone --</option>
-                  {drones.map(d => (
-                    <option key={d.id} value={d.id}>
-                      {d.serial_number} — {d.model_name} ({d.status === "READY" ? "Siap" : "Servis"})
-                    </option>
-                  ))}
+                  <option value="" disabled>-- Pilih Unit Drone {formMatra} --</option>
+                  {drones
+                    .filter((d) => d.matra === formMatra)
+                    .map((d) => (
+                      <option key={d.id} value={d.id}>
+                        {d.serial_number} — {d.model_name} ({d.status === "READY" ? "Siap" : "Servis"})
+                      </option>
+                    ))}
                 </select>
               </div>
 
@@ -1438,6 +1599,23 @@ export function DroneLogbookContainer({
             )}
 
             <form onSubmit={handleDroneSubmit} className="space-y-4">
+              {/* Pilihan Matra */}
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  Matra Armada *
+                </label>
+                <select
+                  value={formDroneMatra}
+                  onChange={(e) => setFormDroneMatra(e.target.value)}
+                  className="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#1F77C5]/20 focus:border-[#1F77C5] outline-none font-semibold text-slate-800 bg-white"
+                  required
+                >
+                  <option value="TNI-AU">TNI-AU (Angkatan Udara)</option>
+                  <option value="TNI-AL">TNI-AL (Angkatan Laut)</option>
+                  <option value="TNI-AD">TNI-AD (Angkatan Darat)</option>
+                </select>
+              </div>
+
               {/* Model Drone */}
               <div className="space-y-1">
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
@@ -1539,6 +1717,7 @@ export function DroneLogbookContainer({
                   <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">
                     {selectedDroneForDetail.model_name}
                   </span>
+                  <MatraBadge matra={selectedDroneForDetail.matra} size="sm" />
                   {selectedDroneForDetail.status === "READY" ? (
                     <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                       Siap Terbang

@@ -49,6 +49,7 @@ export async function getDroneFlightLogs(filters?: {
   startDate?: string
   endDate?: string
   missionType?: string
+  matra?: string
 }) {
   const session = await auth()
   if (!session?.user?.id) throw new Error("Unauthorized")
@@ -57,7 +58,27 @@ export async function getDroneFlightLogs(filters?: {
     throw new Error("Akses ditolak")
   }
 
+  // Jika role GUEST, batasi ketat berdasarkan matra institusi pengguna
+  let scopedMatra: string | undefined = undefined
+  if (session.user.role === "GUEST") {
+    const currentUser = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: { matra: true },
+    })
+    scopedMatra = currentUser?.matra || (session.user as any).matra || undefined
+  } else if (filters?.matra && filters.matra !== "ALL") {
+    scopedMatra = filters.matra
+  }
+
   const whereClause: Prisma.DroneFlightLogWhereInput = {}
+
+  if (scopedMatra) {
+    whereClause.drone = {
+      is: {
+        matra: scopedMatra,
+      },
+    }
+  }
 
   if (filters?.droneId && filters.droneId !== "ALL") {
     whereClause.drone_id = filters.droneId
@@ -86,6 +107,7 @@ export async function getDroneFlightLogs(filters?: {
           id: true,
           serial_number: true,
           model_name: true,
+          matra: true,
           status: true,
         },
       },
