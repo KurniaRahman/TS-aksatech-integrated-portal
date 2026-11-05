@@ -146,6 +146,7 @@ model DroneFlightLog {
   id               String   @id @default(uuid()) @db.Uuid
   drone_id         String   @db.Uuid
   user_id          String   @db.Uuid
+  pilot_name       String?  // Nama pilot penerbang (opsional, jika beda dengan user pencatat)
   flight_date      DateTime @db.Date
   takeoff_time     String   // Format "HH:mm" (contoh: "09:30")
   landing_time     String   // Format "HH:mm" (contoh: "10:15")

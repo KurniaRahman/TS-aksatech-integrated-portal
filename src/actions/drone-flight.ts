@@ -135,6 +135,7 @@ export async function getDroneFlightLogs(filters?: {
  */
 export async function createDroneFlightLog(data: {
   drone_id: string
+  pilot_name?: string
   flight_date: string
   takeoff_time: string
   landing_time: string
@@ -193,6 +194,7 @@ export async function createDroneFlightLog(data: {
     data: {
       drone_id: data.drone_id,
       user_id: session.user.id,
+      pilot_name: data.pilot_name?.trim() || null,
       flight_date: flightDate,
       takeoff_time: cleanTakeoff,
       landing_time: cleanLanding,
@@ -220,6 +222,7 @@ export async function createDroneFlightLog(data: {
 export async function updateDroneFlightLog(
   id: string,
   data: {
+    pilot_name?: string
     flight_date: string
     takeoff_time: string
     landing_time: string
@@ -275,6 +278,7 @@ export async function updateDroneFlightLog(
   const updated = await db.droneFlightLog.update({
     where: { id },
     data: {
+      pilot_name: data.pilot_name !== undefined ? (data.pilot_name.trim() || null) : existing.pilot_name,
       flight_date: flightDate,
       takeoff_time: cleanTakeoff,
       landing_time: cleanLanding,

@@ -43,6 +43,7 @@ export type FlightLogItem = {
   id: string
   drone_id: string
   user_id: string
+  pilot_name?: string | null
   flight_date: Date | string
   takeoff_time: string
   landing_time: string
@@ -115,6 +116,7 @@ export function FlightLogContainer({
   // Form Fields
   const [formMatra, setFormMatra] = useState<string>(userMatra || "TNI-AU")
   const [formDroneId, setFormDroneId] = useState<string>("")
+  const [formPilotName, setFormPilotName] = useState<string>("")
   const [formDate, setFormDate] = useState<string>(todayStr)
   const [formTakeoff, setFormTakeoff] = useState<string>("08:00")
   const [formLanding, setFormLanding] = useState<string>("08:45")
@@ -255,6 +257,7 @@ export function FlightLogContainer({
       defaultDroneId ||
         (matchingDrones.length > 0 ? matchingDrones[0].id : drones.length > 0 ? drones[0].id : "")
     )
+    setFormPilotName("")
     setFormDate(todayStr)
     setFormTakeoff("08:00")
     setFormLanding("08:45")
@@ -271,6 +274,7 @@ export function FlightLogContainer({
     setFormError(null)
     setFormMatra(item.drone?.matra || userMatra || "TNI-AU")
     setFormDroneId(item.drone_id)
+    setFormPilotName(item.pilot_name || "")
 
     const dateStr = typeof item.flight_date === "string"
       ? item.flight_date.split("T")[0]
@@ -324,6 +328,7 @@ export function FlightLogContainer({
     try {
       if (editTarget) {
         const res = await updateDroneFlightLog(editTarget.id, {
+          pilot_name: formPilotName.trim() || undefined,
           flight_date: formDate,
           takeoff_time: formTakeoff,
           landing_time: formLanding,
@@ -341,6 +346,7 @@ export function FlightLogContainer({
       } else {
         const res = await createDroneFlightLog({
           drone_id: formDroneId,
+          pilot_name: formPilotName.trim() || undefined,
           flight_date: formDate,
           takeoff_time: formTakeoff,
           landing_time: formLanding,
@@ -400,7 +406,7 @@ export function FlightLogContainer({
         const matchModel = log.drone?.model_name?.toLowerCase().includes(q)
         const matchMatra = log.drone?.matra?.toLowerCase().includes(q)
         const matchNotes = log.notes?.toLowerCase().includes(q)
-        const matchPilot = log.user?.full_name?.toLowerCase().includes(q)
+        const matchPilot = (log.pilot_name || log.user?.full_name || "")?.toLowerCase().includes(q)
         const matchBat1 = log.battery_1?.toLowerCase().includes(q)
         const matchBat2 = log.battery_2?.toLowerCase().includes(q)
         if (!matchSN && !matchModel && !matchMatra && !matchNotes && !matchPilot && !matchBat1 && !matchBat2) {
@@ -444,7 +450,7 @@ export function FlightLogContainer({
           "Jenis Misi": item.mission_type === "MISSION" ? "Misi" : "Latihan",
           "Nomor Baterai 1": item.battery_1,
           "Nomor Baterai 2": item.battery_2 || "-",
-          "Pilot / Pencatat": item.user?.full_name || "-",
+          "Pilot / Penerbang": item.pilot_name || item.user?.full_name || "-",
           "Catatan": item.notes || "-",
         }
       })
@@ -811,9 +817,11 @@ export function FlightLogContainer({
                         })}
                       </span>
                     </div>
-                    <div className="flex items-center gap-1 text-[11px] text-slate-400 mt-0.5">
-                      <UserIcon className="w-3 h-3" />
-                      <span>{item.user?.full_name || "Pilot"}</span>
+                    <div className="flex items-center gap-1 text-[11px] text-slate-500 mt-0.5">
+                      <UserIcon className="w-3 h-3 text-[#1F77C5]" />
+                      <span>
+                        Pilot: <strong className="text-slate-700 font-semibold">{item.pilot_name || item.user?.full_name || "Pilot"}</strong>
+                      </span>
                     </div>
                   </div>
 
@@ -943,6 +951,24 @@ export function FlightLogContainer({
                     </span>
                   </div>
                 )}
+              </div>
+
+              {/* Nama Pilot / Penerbang (Opsional, Default ke Akun Pengguna) */}
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center justify-between">
+                  <span>Nama Pilot / Penerbang</span>
+                  <span className="text-[11px] text-slate-400 font-normal">Opsional (Default: Akun Anda)</span>
+                </label>
+                <div className="relative">
+                  <UserIcon className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    type="text"
+                    placeholder="Contoh: Mayor Pnb Dian / Lettu Hendra"
+                    value={formPilotName}
+                    onChange={(e) => setFormPilotName(e.target.value)}
+                    className="w-full text-xs sm:text-sm pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#1F77C5]/20 focus:border-[#1F77C5] outline-none font-medium bg-white text-slate-800 placeholder:text-slate-400"
+                  />
+                </div>
               </div>
 
               {/* Tanggal Penerbangan */}
