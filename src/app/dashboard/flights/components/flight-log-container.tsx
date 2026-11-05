@@ -27,6 +27,7 @@ import {
   User as UserIcon,
   AlertCircle
 } from "lucide-react"
+import { MatraBadge } from "@/components/ui/matra-badge"
 
 type PresetType = "ALL" | "TODAY" | "7DAYS" | "30DAYS" | "THIS_MONTH"
 
@@ -34,6 +35,7 @@ export type DroneItem = {
   id: string
   serial_number: string
   model_name: string
+  matra?: string | null
   status: string
 }
 
@@ -41,6 +43,7 @@ export type FlightLogItem = {
   id: string
   drone_id: string
   user_id: string
+  pilot_name?: string | null
   flight_date: Date | string
   takeoff_time: string
   landing_time: string
@@ -54,6 +57,7 @@ export type FlightLogItem = {
     id: string
     serial_number: string
     model_name: string
+    matra?: string | null
     status: string
   }
   user: {
@@ -66,6 +70,7 @@ export type FlightLogItem = {
 
 interface FlightLogContainerProps {
   userRole: "STAFF" | "PM" | "GUEST"
+  userMatra?: string | null
   currentUserId: string
   initialDrones: DroneItem[]
   initialLogs: FlightLogItem[]
@@ -76,6 +81,7 @@ interface FlightLogContainerProps {
 
 export function FlightLogContainer({
   userRole,
+  userMatra,
   currentUserId,
   initialDrones,
   initialLogs,
@@ -92,6 +98,7 @@ export function FlightLogContainer({
   const [logs, setLogs] = useState<FlightLogItem[]>(initialLogs)
 
   // Filters
+  const [matraFilter, setMatraFilter] = useState<string>(userMatra || "ALL")
   const [droneFilter, setDroneFilter] = useState<string>("ALL")
   const [missionFilter, setMissionFilter] = useState<string>("ALL")
   const [searchQuery, setSearchQuery] = useState<string>("")
@@ -107,7 +114,9 @@ export function FlightLogContainer({
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Form Fields
+  const [formMatra, setFormMatra] = useState<string>(userMatra || "TNI-AU")
   const [formDroneId, setFormDroneId] = useState<string>("")
+  const [formPilotName, setFormPilotName] = useState<string>("")
   const [formDate, setFormDate] = useState<string>(todayStr)
   const [formTakeoff, setFormTakeoff] = useState<string>("08:00")
   const [formLanding, setFormLanding] = useState<string>("08:45")
@@ -154,8 +163,8 @@ export function FlightLogContainer({
     return `${hours} Jam ${remainingMins} Menit`
   }
 
-  // Reload logs from server with current date range
-  const reloadLogs = (start?: string, end?: string) => {
+  // Reload logs from server with current date range & matra
+  const reloadLogs = (start?: string, end?: string, matra: string = matraFilter) => {
     const s = start !== undefined ? start : startDate
     const e = end !== undefined ? end : endDate
     startTransition(async () => {
@@ -163,6 +172,7 @@ export function FlightLogContainer({
         const res = await getDroneFlightLogs({
           startDate: s,
           endDate: e,
+          matra: matra !== "ALL" ? matra : undefined,
         })
         if (res.success && res.data) {
           setLogs(res.data as FlightLogItem[])
@@ -182,14 +192,14 @@ export function FlightLogContainer({
     if (preset === "ALL") {
       setStartDate("")
       setEndDate("")
-      reloadLogs("", "")
+      reloadLogs("", "", matraFilter)
       return
     }
 
     if (preset === "TODAY") {
       setStartDate(today)
       setEndDate(today)
-      reloadLogs(today, today)
+      reloadLogs(today, today, matraFilter)
       return
     }
 
@@ -199,7 +209,7 @@ export function FlightLogContainer({
       const pastStr = getDateStringWIB(past)
       setStartDate(pastStr)
       setEndDate(today)
-      reloadLogs(pastStr, today)
+      reloadLogs(pastStr, today, matraFilter)
       return
     }
 
@@ -209,7 +219,7 @@ export function FlightLogContainer({
       const pastStr = getDateStringWIB(past)
       setStartDate(pastStr)
       setEndDate(today)
-      reloadLogs(pastStr, today)
+      reloadLogs(pastStr, today, matraFilter)
       return
     }
 
@@ -218,8 +228,18 @@ export function FlightLogContainer({
       const firstDayStr = getDateStringWIB(firstDay)
       setStartDate(firstDayStr)
       setEndDate(today)
-      reloadLogs(firstDayStr, today)
+      reloadLogs(firstDayStr, today, matraFilter)
       return
+    }
+  }
+
+  const handleFormMatraChange = (newMatra: string) => {
+    setFormMatra(newMatra)
+    const matching = drones.filter((d) => d.matra === newMatra)
+    if (matching.length > 0) {
+      setFormDroneId(matching[0].id)
+    } else {
+      setFormDroneId("")
     }
   }
 
@@ -227,7 +247,17 @@ export function FlightLogContainer({
   const openAddModal = (defaultDroneId?: string) => {
     setEditTarget(null)
     setFormError(null)
-    setFormDroneId(defaultDroneId || (drones.length > 0 ? drones[0].id : ""))
+
+    const targetDrone = defaultDroneId ? drones.find((d) => d.id === defaultDroneId) : null
+    const initialMatra = targetDrone?.matra || userMatra || "TNI-AU"
+    setFormMatra(initialMatra)
+
+    const matchingDrones = drones.filter((d) => d.matra === initialMatra)
+    setFormDroneId(
+      defaultDroneId ||
+        (matchingDrones.length > 0 ? matchingDrones[0].id : drones.length > 0 ? drones[0].id : "")
+    )
+    setFormPilotName("")
     setFormDate(todayStr)
     setFormTakeoff("08:00")
     setFormLanding("08:45")
@@ -242,7 +272,9 @@ export function FlightLogContainer({
   const openEditModal = (item: FlightLogItem) => {
     setEditTarget(item)
     setFormError(null)
+    setFormMatra(item.drone?.matra || userMatra || "TNI-AU")
     setFormDroneId(item.drone_id)
+    setFormPilotName(item.pilot_name || "")
 
     const dateStr = typeof item.flight_date === "string"
       ? item.flight_date.split("T")[0]
@@ -296,6 +328,7 @@ export function FlightLogContainer({
     try {
       if (editTarget) {
         const res = await updateDroneFlightLog(editTarget.id, {
+          pilot_name: formPilotName.trim() || undefined,
           flight_date: formDate,
           takeoff_time: formTakeoff,
           landing_time: formLanding,
@@ -313,6 +346,7 @@ export function FlightLogContainer({
       } else {
         const res = await createDroneFlightLog({
           drone_id: formDroneId,
+          pilot_name: formPilotName.trim() || undefined,
           flight_date: formDate,
           takeoff_time: formTakeoff,
           landing_time: formLanding,
@@ -353,6 +387,10 @@ export function FlightLogContainer({
   // Filtered Logs
   const filteredLogs = useMemo(() => {
     return logs.filter((log) => {
+      // Filter Matra
+      if (matraFilter !== "ALL" && log.drone?.matra !== matraFilter) {
+        return false
+      }
       // Filter drone
       if (droneFilter !== "ALL" && log.drone_id !== droneFilter) {
         return false
@@ -366,17 +404,18 @@ export function FlightLogContainer({
         const q = searchQuery.toLowerCase()
         const matchSN = log.drone?.serial_number?.toLowerCase().includes(q)
         const matchModel = log.drone?.model_name?.toLowerCase().includes(q)
+        const matchMatra = log.drone?.matra?.toLowerCase().includes(q)
         const matchNotes = log.notes?.toLowerCase().includes(q)
-        const matchPilot = log.user?.full_name?.toLowerCase().includes(q)
+        const matchPilot = (log.pilot_name || log.user?.full_name || "")?.toLowerCase().includes(q)
         const matchBat1 = log.battery_1?.toLowerCase().includes(q)
         const matchBat2 = log.battery_2?.toLowerCase().includes(q)
-        if (!matchSN && !matchModel && !matchNotes && !matchPilot && !matchBat1 && !matchBat2) {
+        if (!matchSN && !matchModel && !matchMatra && !matchNotes && !matchPilot && !matchBat1 && !matchBat2) {
           return false
         }
       }
       return true
     })
-  }, [logs, droneFilter, missionFilter, searchQuery])
+  }, [logs, matraFilter, droneFilter, missionFilter, searchQuery])
 
   // Summary Metrics
   const totalFlights = filteredLogs.length
@@ -404,13 +443,14 @@ export function FlightLogContainer({
           "Tanggal": dateFormatted,
           "Serial Number": item.drone?.serial_number || "-",
           "Model Drone": item.drone?.model_name || "-",
+          "Matra": item.drone?.matra || "-",
           "Jam Take-off": item.takeoff_time,
           "Jam Landing": item.landing_time,
           "Durasi (Menit)": item.duration_minutes,
           "Jenis Misi": item.mission_type === "MISSION" ? "Misi" : "Latihan",
           "Nomor Baterai 1": item.battery_1,
           "Nomor Baterai 2": item.battery_2 || "-",
-          "Pilot / Pencatat": item.user?.full_name || "-",
+          "Pilot / Penerbang": item.pilot_name || item.user?.full_name || "-",
           "Catatan": item.notes || "-",
         }
       })
@@ -424,6 +464,7 @@ export function FlightLogContainer({
         { wch: 18 }, // Tanggal
         { wch: 16 }, // SN
         { wch: 18 }, // Model
+        { wch: 14 }, // Matra
         { wch: 12 }, // Takeoff
         { wch: 12 }, // Landing
         { wch: 14 }, // Durasi
@@ -444,81 +485,95 @@ export function FlightLogContainer({
 
   return (
     <div className="space-y-6">
-      {/* 1. Responsive KPI Summary Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* 1. Responsive KPI Summary Metric Cards (Compact 2x2 on Mobile) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
         {/* Total Penerbangan */}
-        <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-sm flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+        <div className="bg-white rounded-2xl p-3 sm:p-5 border border-slate-200/90 shadow-sm flex items-center justify-between">
+          <div className="min-w-0">
+            <p className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider truncate">
               Total Penerbangan
             </p>
-            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-800 mt-1">
+            <h3 className="text-xl sm:text-3xl font-extrabold text-slate-800 mt-0.5 sm:mt-1">
               {totalFlights}
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5">Flight terdata di filter ini</p>
+            <p className="hidden sm:block text-xs text-slate-500 mt-0.5">Flight terdata di filter ini</p>
           </div>
-          <div className="p-3 rounded-2xl bg-blue-50 text-[#1F77C5] border border-blue-100 shadow-xs">
-            <PlaneTakeoff className="w-6 h-6" />
+          <div className="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-blue-50 text-[#1F77C5] border border-blue-100 shadow-2xs shrink-0">
+            <PlaneTakeoff className="w-4 h-4 sm:w-6 sm:h-6" />
           </div>
         </div>
 
         {/* Total Jam Terbang (Airtime) */}
-        <div className="bg-white rounded-2xl p-4 sm:p-5 border border-sky-200/70 shadow-sm flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-sky-600 uppercase tracking-wider">
-              Total Durasi Terbang
+        <div className="bg-white rounded-2xl p-3 sm:p-5 border border-sky-200/70 shadow-sm flex items-center justify-between">
+          <div className="min-w-0">
+            <p className="text-[10px] sm:text-xs font-bold text-sky-600 uppercase tracking-wider truncate">
+              Durasi Terbang
             </p>
-            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-800 mt-1">
+            <h3 className="text-sm sm:text-2xl lg:text-3xl font-extrabold text-slate-800 mt-0.5 sm:mt-1 truncate">
               {formatDurationDisplay(totalAirtimeMinutes)}
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="hidden sm:block text-xs text-slate-500 mt-0.5">
               Akumulasi {totalAirtimeMinutes.toLocaleString()} menit
             </p>
           </div>
-          <div className="p-3 rounded-2xl bg-sky-50 text-sky-600 border border-sky-100 shadow-xs">
-            <Clock className="w-6 h-6" />
+          <div className="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-sky-50 text-sky-600 border border-sky-100 shadow-2xs shrink-0">
+            <Clock className="w-4 h-4 sm:w-6 sm:h-6" />
           </div>
         </div>
 
         {/* Misi vs Latihan */}
-        <div className="bg-white rounded-2xl p-4 sm:p-5 border border-purple-200/70 shadow-sm flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-purple-600 uppercase tracking-wider">
+        <div className="bg-white rounded-2xl p-3 sm:p-5 border border-purple-200/70 shadow-sm flex items-center justify-between">
+          <div className="min-w-0">
+            <p className="text-[10px] sm:text-xs font-bold text-purple-600 uppercase tracking-wider truncate">
               Distribusi Misi
             </p>
-            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-800 mt-1">
-              {missionCount} <span className="text-sm font-semibold text-slate-500">Misi</span> / {trainingCount} <span className="text-sm font-semibold text-slate-500">Latihan</span>
+            <h3 className="text-xs sm:text-xl lg:text-2xl font-extrabold text-slate-800 mt-0.5 sm:mt-1 truncate">
+              {missionCount} Misi / {trainingCount} Latih
             </h3>
-            <p className="text-xs text-purple-600 font-semibold mt-0.5">
+            <p className="hidden sm:block text-xs text-purple-600 font-semibold mt-0.5">
               {missionPercentage}% Penerbangan Misi
             </p>
           </div>
-          <div className="p-3 rounded-2xl bg-purple-50 text-purple-600 border border-purple-100 shadow-xs">
-            <Target className="w-6 h-6" />
+          <div className="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-purple-50 text-purple-600 border border-purple-100 shadow-2xs shrink-0">
+            <Target className="w-4 h-4 sm:w-6 sm:h-6" />
           </div>
         </div>
 
         {/* Status Armada Terdaftar */}
-        <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-sm flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-              Armada Terdaftar
+        <div className="bg-white rounded-2xl p-3 sm:p-5 border border-slate-200/90 shadow-sm flex items-center justify-between">
+          <div className="min-w-0">
+            <p className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider truncate">
+              Armada Aktif
             </p>
-            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-800 mt-1">
+            <h3 className="text-xl sm:text-3xl font-extrabold text-slate-800 mt-0.5 sm:mt-1">
               {drones.length}
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5">Unit drone aktif & terdata</p>
+            <p className="hidden sm:block text-xs text-slate-500 mt-0.5">Unit drone aktif & terdata</p>
           </div>
-          <div className="p-3 rounded-2xl bg-slate-50 text-slate-600 border border-slate-200 shadow-xs">
-            <Cpu className="w-6 h-6" />
+          <div className="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-slate-50 text-slate-600 border border-slate-200 shadow-2xs shrink-0">
+            <Cpu className="w-4 h-4 sm:w-6 sm:h-6" />
           </div>
         </div>
       </div>
 
-      {/* 2. Toolbar Filter & Action Buttons */}
-      <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/90 shadow-sm space-y-4">
-        {/* Baris 1: Filter Cepat Tanggal Preset & Tombol Tambah */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+      {/* 2. Global Quick Action (Catat Penerbangan - Konsisten dengan Catat Perawatan) */}
+      {!isGuest && (
+        <div className="flex items-center gap-2.5 w-full sm:w-auto sm:justify-end">
+          <button
+            type="button"
+            onClick={() => openAddModal()}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#0B2545] to-[#1F77C5] text-white text-xs font-bold shadow-sm hover:opacity-95 transition-all active:scale-[0.98] w-full sm:w-auto"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Catat Penerbangan</span>
+          </button>
+        </div>
+      )}
+
+      {/* 3. Toolbar Filter & Action Buttons */}
+      <div className="bg-white rounded-3xl p-4 sm:p-6 border border-slate-200/90 shadow-sm space-y-4">
+        {/* Baris 1: Filter Cepat Tanggal Preset & Export Excel */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-1.5 flex-wrap">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mr-1 flex items-center gap-1">
               <CalendarIcon className="w-3.5 h-3.5" /> Rentang:
@@ -545,33 +600,22 @@ export function FlightLogContainer({
             ))}
           </div>
 
-          <div className="flex items-center gap-2 self-start lg:self-center">
+          <div className="flex items-center gap-2 self-start sm:self-center w-full sm:w-auto justify-end">
             <button
               type="button"
               onClick={exportToExcel}
               disabled={isExporting || filteredLogs.length === 0}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-blue-200 transition-all shadow-xs disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
+              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-blue-200 transition-all shadow-xs disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] w-full sm:w-auto"
               title={filteredLogs.length === 0 ? "Tidak ada data untuk diekspor" : "Ekspor rekap log penerbangan ke Excel"}
             >
               <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
               <span>{isExporting ? "Mengunduh..." : "Export Excel"}</span>
             </button>
-
-            {!isGuest && (
-              <button
-                type="button"
-                onClick={() => openAddModal()}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-[#1F77C5] text-white hover:bg-blue-600 transition-all shadow-xs active:scale-[0.98]"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Catat Penerbangan</span>
-              </button>
-            )}
           </div>
         </div>
 
         {/* Baris 2: Search Box & Dropdown Filters */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-3 border-t border-slate-100">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-3 border-t border-slate-100">
           {/* Search Box */}
           <div className="relative">
             <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -584,6 +628,31 @@ export function FlightLogContainer({
             />
           </div>
 
+          {/* Filter Matra */}
+          <div className="relative">
+            {isGuest && userMatra ? (
+              <div className="flex items-center h-full px-3.5 py-2 rounded-xl border border-slate-200 bg-slate-50">
+                <MatraBadge matra={userMatra} size="sm" />
+              </div>
+            ) : (
+              <select
+                value={matraFilter}
+                onChange={(e) => {
+                  const val = e.target.value
+                  setMatraFilter(val)
+                  setDroneFilter("ALL")
+                  reloadLogs(startDate, endDate, val)
+                }}
+                className="w-full text-xs sm:text-sm px-3.5 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#1F77C5]/20 focus:border-[#1F77C5] outline-none cursor-pointer font-medium bg-white text-slate-700"
+              >
+                <option value="ALL">Semua Matra</option>
+                <option value="TNI-AU">TNI-AU</option>
+                <option value="TNI-AL">TNI-AL</option>
+                <option value="TNI-AD">TNI-AD</option>
+              </select>
+            )}
+          </div>
+
           {/* Filter Unit Drone */}
           <div className="relative">
             <select
@@ -591,12 +660,16 @@ export function FlightLogContainer({
               onChange={(e) => setDroneFilter(e.target.value)}
               className="w-full text-xs sm:text-sm px-3.5 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#1F77C5]/20 focus:border-[#1F77C5] outline-none cursor-pointer font-medium bg-white text-slate-700"
             >
-              <option value="ALL">Semua Unit Drone</option>
-              {drones.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.serial_number}
-                </option>
-              ))}
+              <option value="ALL">
+                Semua Unit ({drones.filter((d) => matraFilter === "ALL" || d.matra === matraFilter).length})
+              </option>
+              {drones
+                .filter((d) => matraFilter === "ALL" || d.matra === matraFilter)
+                .map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.serial_number}
+                  </option>
+                ))}
             </select>
           </div>
 
@@ -608,8 +681,8 @@ export function FlightLogContainer({
               className="w-full text-xs sm:text-sm px-3.5 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#1F77C5]/20 focus:border-[#1F77C5] outline-none cursor-pointer font-medium bg-white text-slate-700"
             >
               <option value="ALL">Semua Jenis Misi</option>
-              <option value="TRAINING">🎓 Latihan (Training)</option>
-              <option value="MISSION">🎯 Misi (Mission)</option>
+              <option value="TRAINING">Latihan</option>
+              <option value="MISSION">Misi</option>
             </select>
           </div>
 
@@ -668,10 +741,11 @@ export function FlightLogContainer({
                     <span className="font-mono text-sm sm:text-base font-extrabold text-slate-900">
                       {item.drone?.serial_number || "Drone"}
                     </span>
-                    {/* Model */}
+                    {/* Model & Matra */}
                     <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
                       {item.drone?.model_name || "Unknown"}
                     </span>
+                    <MatraBadge matra={item.drone?.matra} size="sm" />
                     {/* Jenis Misi Badge */}
                     {isTraining ? (
                       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
@@ -746,9 +820,11 @@ export function FlightLogContainer({
                         })}
                       </span>
                     </div>
-                    <div className="flex items-center gap-1 text-[11px] text-slate-400 mt-0.5">
-                      <UserIcon className="w-3 h-3" />
-                      <span>{item.user?.full_name || "Pilot"}</span>
+                    <div className="flex items-center gap-1 text-[11px] text-slate-500 mt-0.5">
+                      <UserIcon className="w-3 h-3 text-[#1F77C5]" />
+                      <span>
+                        Pilot: <strong className="text-slate-700 font-semibold">{item.pilot_name || item.user?.full_name || "Pilot"}</strong>
+                      </span>
                     </div>
                   </div>
 
@@ -805,10 +881,48 @@ export function FlightLogContainer({
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Dropdown Unit Drone */}
+              {/* Opsi Bertingkat 1: Pilih Matra */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center justify-between">
+                  <span>1. Pilih Matra *</span>
+                  {isGuest && userMatra && (
+                    <span className="text-[11px] text-slate-400 font-normal">Terkunci untuk akun Guest</span>
+                  )}
+                </label>
+                {isGuest && userMatra ? (
+                  <div className="py-1">
+                    <MatraBadge matra={userMatra} size="md" />
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-3 gap-2">
+                    {["TNI-AU", "TNI-AL", "TNI-AD"].map((m) => {
+                      const isSelected = formMatra === m
+                      return (
+                        <button
+                          key={m}
+                          type="button"
+                          onClick={() => handleFormMatraChange(m)}
+                          className={`flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl border text-xs font-bold transition-all ${
+                            isSelected
+                              ? "bg-white border-[#1F77C5] ring-2 ring-[#1F77C5]/20 shadow-xs"
+                              : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-white"
+                          }`}
+                        >
+                          <MatraBadge matra={m} size="sm" />
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Opsi Bertingkat 2: Dropdown Unit Drone pada Matra Terpilih */}
               <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                  Pilih Unit Drone (SN) *
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center justify-between">
+                  <span>2. Pilih Unit Drone (SN) *</span>
+                  <span className="text-[11px] font-normal text-slate-400">
+                    ({drones.filter((d) => d.matra === formMatra).length} Unit Terdaftar)
+                  </span>
                 </label>
                 <select
                   value={formDroneId}
@@ -822,19 +936,41 @@ export function FlightLogContainer({
                   className="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#1F77C5]/20 focus:border-[#1F77C5] outline-none cursor-pointer font-semibold bg-white text-slate-800"
                   required
                 >
-                  <option value="" disabled>Pilih Drone...</option>
-                  {drones.map((d) => (
-                    <option key={d.id} value={d.id}>
-                      {d.serial_number}
-                    </option>
-                  ))}
+                  <option value="" disabled>-- Pilih Drone {formMatra} --</option>
+                  {drones
+                    .filter((d) => d.matra === formMatra)
+                    .map((d) => (
+                      <option key={d.id} value={d.id}>
+                        {d.serial_number}
+                      </option>
+                    ))}
                 </select>
                 {selectedDroneInForm && (
-                  <p className="text-[11px] text-slate-500 pt-0.5">
-                    Model: <strong className="text-slate-700">{selectedDroneInForm.model_name}</strong>
-                    {isDualBattery ? " (Menggunakan 2 Baterai)" : " (Menggunakan 1 Baterai)"}
-                  </p>
+                  <div className="flex items-center gap-2 pt-1 flex-wrap">
+                    <MatraBadge matra={selectedDroneInForm.matra} size="sm" />
+                    <span className="text-[11px] text-slate-500">
+                      Model: <strong className="text-slate-700">{selectedDroneInForm.model_name}</strong>
+                      {isDualBattery ? " (Menggunakan 2 Baterai)" : " (Menggunakan 1 Baterai)"}
+                    </span>
+                  </div>
                 )}
+              </div>
+
+              {/* Nama Pilot / Penerbang (Opsional, Default ke Akun Pengguna) */}
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center justify-between">
+                  <span>Nama Pilot</span>
+                </label>
+                <div className="relative">
+                  <UserIcon className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <input
+                    type="text"
+                    placeholder="Contoh: Mayor Pnb Dian / Lettu Hendra"
+                    value={formPilotName}
+                    onChange={(e) => setFormPilotName(e.target.value)}
+                    className="w-full text-xs sm:text-sm pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#1F77C5]/20 focus:border-[#1F77C5] outline-none font-medium bg-white text-slate-800 placeholder:text-slate-400"
+                  />
+                </div>
               </div>
 
               {/* Tanggal Penerbangan */}

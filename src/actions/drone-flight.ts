@@ -49,6 +49,7 @@ export async function getDroneFlightLogs(filters?: {
   startDate?: string
   endDate?: string
   missionType?: string
+  matra?: string
 }) {
   const session = await auth()
   if (!session?.user?.id) throw new Error("Unauthorized")
@@ -57,7 +58,27 @@ export async function getDroneFlightLogs(filters?: {
     throw new Error("Akses ditolak")
   }
 
+  // Jika role GUEST, batasi ketat berdasarkan matra institusi pengguna
+  let scopedMatra: string | undefined = undefined
+  if (session.user.role === "GUEST") {
+    const currentUser = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: { matra: true },
+    })
+    scopedMatra = currentUser?.matra || (session.user as any).matra || undefined
+  } else if (filters?.matra && filters.matra !== "ALL") {
+    scopedMatra = filters.matra
+  }
+
   const whereClause: Prisma.DroneFlightLogWhereInput = {}
+
+  if (scopedMatra) {
+    whereClause.drone = {
+      is: {
+        matra: scopedMatra,
+      },
+    }
+  }
 
   if (filters?.droneId && filters.droneId !== "ALL") {
     whereClause.drone_id = filters.droneId
@@ -86,6 +107,7 @@ export async function getDroneFlightLogs(filters?: {
           id: true,
           serial_number: true,
           model_name: true,
+          matra: true,
           status: true,
         },
       },
@@ -113,6 +135,7 @@ export async function getDroneFlightLogs(filters?: {
  */
 export async function createDroneFlightLog(data: {
   drone_id: string
+  pilot_name?: string
   flight_date: string
   takeoff_time: string
   landing_time: string
@@ -171,6 +194,7 @@ export async function createDroneFlightLog(data: {
     data: {
       drone_id: data.drone_id,
       user_id: session.user.id,
+      pilot_name: data.pilot_name?.trim() || null,
       flight_date: flightDate,
       takeoff_time: cleanTakeoff,
       landing_time: cleanLanding,
@@ -198,6 +222,7 @@ export async function createDroneFlightLog(data: {
 export async function updateDroneFlightLog(
   id: string,
   data: {
+    pilot_name?: string
     flight_date: string
     takeoff_time: string
     landing_time: string
@@ -253,6 +278,7 @@ export async function updateDroneFlightLog(
   const updated = await db.droneFlightLog.update({
     where: { id },
     data: {
+      pilot_name: data.pilot_name !== undefined ? (data.pilot_name.trim() || null) : existing.pilot_name,
       flight_date: flightDate,
       takeoff_time: cleanTakeoff,
       landing_time: cleanLanding,

@@ -35,6 +35,7 @@ model User {
   password_hash String
   full_name     String
   role          Role
+  matra         String?  // TNI-AU, TNI-AL, TNI-AD (Khusus role GUEST / Klien)
   is_active     Boolean  @default(true)
   created_at    DateTime @default(now())
 
@@ -111,6 +112,7 @@ model Drone {
   id            String   @id @default(uuid()) @db.Uuid
   serial_number String   @unique
   model_name    String
+  matra         String?  // TNI-AU, TNI-AL, TNI-AD
   status        String   @default("READY") // READY, IN_MAINTENANCE, RETIRED
   notes         String?  @db.Text
   created_at    DateTime @default(now())
@@ -144,6 +146,7 @@ model DroneFlightLog {
   id               String   @id @default(uuid()) @db.Uuid
   drone_id         String   @db.Uuid
   user_id          String   @db.Uuid
+  pilot_name       String?  // Nama pilot penerbang (opsional, jika beda dengan user pencatat)
   flight_date      DateTime @db.Date
   takeoff_time     String   // Format "HH:mm" (contoh: "09:30")
   landing_time     String   // Format "HH:mm" (contoh: "10:15")
