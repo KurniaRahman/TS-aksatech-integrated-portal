@@ -757,7 +757,6 @@ export function DroneLogbookContainer({
               {isGuest && userMatra ? (
                 <div className="flex items-center gap-2">
                   <MatraBadge matra={userMatra} size="md" />
-                  <span className="text-xs text-slate-400 italic">(Akses Guest dibatasi untuk {userMatra})</span>
                 </div>
               ) : (
                 <>
