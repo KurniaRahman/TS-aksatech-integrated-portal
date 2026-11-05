@@ -178,58 +178,57 @@ export default async function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* 2. 4 Executive Metric Cards (Berwarna & Tetap Dominan Putih Bersih) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      {/* 2. 4 Executive Metric Cards (Compact 2x2 on Mobile) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 lg:gap-6">
         
         {/* Card 1: Total Karyawan Aktif (Aksen Aksa Blue) */}
         <Link 
           href="/admin/users"
-          className="group p-5 rounded-2xl border-l-4 border-l-[#1F77C5] bg-gradient-to-br from-blue-50/70 via-white to-white border-t border-r border-b border-blue-200/90 shadow-2xs hover:shadow-md hover:border-blue-300 hover:-translate-y-0.5 transition-all space-y-2 block"
+          className="group p-3 sm:p-5 rounded-2xl border-l-4 border-l-[#1F77C5] bg-gradient-to-br from-blue-50/70 via-white to-white border-t border-r border-b border-blue-200/90 shadow-2xs hover:shadow-md hover:border-blue-300 hover:-translate-y-0.5 transition-all space-y-1.5 sm:space-y-2 block"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-black text-blue-800 uppercase tracking-wider">Karyawan Aktif</span>
-            <div className="w-8 h-8 rounded-xl bg-[#1F77C5] text-white flex items-center justify-center shadow-xs shadow-blue-500/20 group-hover:scale-110 transition-transform">
-              <Users className="w-4 h-4" />
+            <span className="text-[10px] sm:text-[11px] font-black text-blue-800 uppercase tracking-wider truncate">Karyawan Aktif</span>
+            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-[#1F77C5] text-white flex items-center justify-center shadow-xs shadow-blue-500/20 group-hover:scale-110 transition-transform shrink-0">
+              <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <p className="text-3xl font-black text-[#1F77C5] font-mono">
-            {totalUsers} <span className="text-xs font-bold text-slate-500 font-sans">Orang</span>
+          <p className="text-xl sm:text-3xl font-black text-[#1F77C5] font-mono">
+            {totalUsers} <span className="text-[10px] sm:text-xs font-bold text-slate-500 font-sans">Orang</span>
           </p>
-          <div className="flex items-center justify-between pt-1 text-[11px] text-slate-400 group-hover:text-[#1F77C5] transition-colors font-medium">
+          <div className="hidden sm:flex items-center justify-between pt-1 text-[11px] text-slate-400 group-hover:text-[#1F77C5] transition-colors font-medium">
             <span>Kelola karyawan</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
           </div>
         </Link>
 
         {/* Card 2: Hadir Hari Ini (Aksen Emerald dengan Rasio & Progress Bar) */}
-        <div className="p-5 rounded-2xl border-l-4 border-l-emerald-500 bg-gradient-to-br from-emerald-50/70 via-white to-white border-t border-r border-b border-emerald-200/90 shadow-2xs hover:shadow-md hover:border-emerald-300 hover:-translate-y-0.5 transition-all space-y-2.5">
+        <div className="p-3 sm:p-5 rounded-2xl border-l-4 border-l-emerald-500 bg-gradient-to-br from-emerald-50/70 via-white to-white border-t border-r border-b border-emerald-200/90 shadow-2xs hover:shadow-md hover:border-emerald-300 hover:-translate-y-0.5 transition-all space-y-1.5 sm:space-y-2.5">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-black text-emerald-800 uppercase tracking-wider">Hadir Hari Ini</span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center shadow-xs shadow-emerald-500/20">
-              <CheckCircle2 className="w-4 h-4" />
+            <span className="text-[10px] sm:text-[11px] font-black text-emerald-800 uppercase tracking-wider truncate">Hadir Hari Ini</span>
+            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-emerald-500 text-white flex items-center justify-center shadow-xs shadow-emerald-500/20 shrink-0">
+              <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <div className="flex items-baseline gap-1.5">
-            <p className="text-3xl font-black text-emerald-700 font-mono">
+          <div className="flex items-baseline gap-1">
+            <p className="text-xl sm:text-3xl font-black text-emerald-700 font-mono">
               {attendedCount}
             </p>
-            <p className="text-xl font-bold text-slate-400 font-mono">
-              / {totalUsers}
+            <p className="text-sm sm:text-xl font-bold text-slate-400 font-mono">
+              /{totalUsers}
             </p>
-            <span className="text-xs font-bold text-slate-500 font-sans ml-1">Karyawan</span>
           </div>
 
           {/* Progress Bar & Sub-keterangan rasio */}
-          <div className="space-y-1.5 pt-0.5">
-            <div className="w-full bg-emerald-100/70 h-1.5 rounded-full overflow-hidden">
+          <div className="space-y-1 sm:space-y-1.5 pt-0.5">
+            <div className="w-full bg-emerald-100/70 h-1 sm:h-1.5 rounded-full overflow-hidden">
               <div 
                 className="h-full bg-emerald-500 rounded-full transition-all duration-500"
                 style={{ width: `${attendanceRate}%` }}
               />
             </div>
-            <div className="flex items-center justify-between text-[11px] font-medium">
+            <div className="flex items-center justify-between text-[9px] sm:text-[11px] font-medium">
               <span className="text-emerald-700 font-bold">{attendanceRate}% Presensi</span>
-              <span className="text-amber-700 font-semibold">{unattendedCount} Belum</span>
+              <span className="hidden sm:inline text-amber-700 font-semibold">{unattendedCount} Belum</span>
             </div>
           </div>
         </div>
@@ -237,35 +236,35 @@ export default async function AdminDashboardPage() {
         {/* Card 3: Lembur Pending (Aksen Amber) */}
         <Link 
           href="/admin/overtime"
-          className="group p-5 rounded-2xl border-l-4 border-l-amber-500 bg-gradient-to-br from-amber-50/70 via-white to-white border-t border-r border-b border-amber-200/90 shadow-2xs hover:shadow-md hover:border-amber-300 hover:-translate-y-0.5 transition-all space-y-2 block"
+          className="group p-3 sm:p-5 rounded-2xl border-l-4 border-l-amber-500 bg-gradient-to-br from-amber-50/70 via-white to-white border-t border-r border-b border-amber-200/90 shadow-2xs hover:shadow-md hover:border-amber-300 hover:-translate-y-0.5 transition-all space-y-1.5 sm:space-y-2 block"
         >
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-black text-amber-800 uppercase tracking-wider">Lembur Pending</span>
-            <div className="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-xs shadow-amber-500/20 group-hover:scale-110 transition-transform">
-              <Clock className="w-4 h-4" />
+            <span className="text-[10px] sm:text-[11px] font-black text-amber-800 uppercase tracking-wider truncate">Lembur Pending</span>
+            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-amber-500 text-white flex items-center justify-center shadow-xs shadow-amber-500/20 group-hover:scale-110 transition-transform shrink-0">
+              <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <p className="text-3xl font-black text-amber-600 font-mono">
-            {pendingOvertimes} <span className="text-xs font-bold text-slate-500 font-sans">Pengajuan</span>
+          <p className="text-xl sm:text-3xl font-black text-amber-600 font-mono">
+            {pendingOvertimes} <span className="text-[10px] sm:text-xs font-bold text-slate-500 font-sans">Tiket</span>
           </p>
-          <div className="flex items-center justify-between pt-1 text-[11px] text-slate-400 group-hover:text-amber-600 transition-colors font-medium">
+          <div className="hidden sm:flex items-center justify-between pt-1 text-[11px] text-slate-400 group-hover:text-amber-600 transition-colors font-medium">
             <span>Tinjau lembur</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
           </div>
         </Link>
 
         {/* Card 4: Alpha / Tidak Hadir (Aksen Rose) */}
-        <div className="p-5 rounded-2xl border-l-4 border-l-rose-500 bg-gradient-to-br from-rose-50/70 via-white to-white border-t border-r border-b border-rose-200/90 shadow-2xs hover:shadow-md hover:border-rose-300 hover:-translate-y-0.5 transition-all space-y-2">
+        <div className="p-3 sm:p-5 rounded-2xl border-l-4 border-l-rose-500 bg-gradient-to-br from-rose-50/70 via-white to-white border-t border-r border-b border-rose-200/90 shadow-2xs hover:shadow-md hover:border-rose-300 hover:-translate-y-0.5 transition-all space-y-1.5 sm:space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-black text-rose-800 uppercase tracking-wider">Alpha Hari Ini</span>
-            <div className="w-8 h-8 rounded-xl bg-rose-500 text-white flex items-center justify-center shadow-xs shadow-rose-500/20">
-              <AlertCircle className="w-4 h-4" />
+            <span className="text-[10px] sm:text-[11px] font-black text-rose-800 uppercase tracking-wider truncate">Alpha Hari Ini</span>
+            <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-rose-500 text-white flex items-center justify-center shadow-xs shadow-rose-500/20 shrink-0">
+              <AlertCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
           </div>
-          <p className="text-3xl font-black text-rose-600 font-mono">
-            {todayAlphas} <span className="text-xs font-bold text-slate-500 font-sans">Karyawan</span>
+          <p className="text-xl sm:text-3xl font-black text-rose-600 font-mono">
+            {todayAlphas} <span className="text-[10px] sm:text-xs font-bold text-slate-500 font-sans">Orang</span>
           </p>
-          <p className="text-[11px] font-medium text-slate-400 pt-1">
+          <p className="hidden sm:block text-[11px] font-medium text-slate-400 pt-1">
             Otomatis setelah 17:00 WIB
           </p>
         </div>

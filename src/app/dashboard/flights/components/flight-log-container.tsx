@@ -485,73 +485,73 @@ export function FlightLogContainer({
 
   return (
     <div className="space-y-6">
-      {/* 1. Responsive KPI Summary Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* 1. Responsive KPI Summary Metric Cards (Compact 2x2 on Mobile) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
         {/* Total Penerbangan */}
-        <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-sm flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+        <div className="bg-white rounded-2xl p-3 sm:p-5 border border-slate-200/90 shadow-sm flex items-center justify-between">
+          <div className="min-w-0">
+            <p className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider truncate">
               Total Penerbangan
             </p>
-            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-800 mt-1">
+            <h3 className="text-xl sm:text-3xl font-extrabold text-slate-800 mt-0.5 sm:mt-1">
               {totalFlights}
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5">Flight terdata di filter ini</p>
+            <p className="hidden sm:block text-xs text-slate-500 mt-0.5">Flight terdata di filter ini</p>
           </div>
-          <div className="p-3 rounded-2xl bg-blue-50 text-[#1F77C5] border border-blue-100 shadow-xs">
-            <PlaneTakeoff className="w-6 h-6" />
+          <div className="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-blue-50 text-[#1F77C5] border border-blue-100 shadow-2xs shrink-0">
+            <PlaneTakeoff className="w-4 h-4 sm:w-6 sm:h-6" />
           </div>
         </div>
 
         {/* Total Jam Terbang (Airtime) */}
-        <div className="bg-white rounded-2xl p-4 sm:p-5 border border-sky-200/70 shadow-sm flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-sky-600 uppercase tracking-wider">
-              Total Durasi Terbang
+        <div className="bg-white rounded-2xl p-3 sm:p-5 border border-sky-200/70 shadow-sm flex items-center justify-between">
+          <div className="min-w-0">
+            <p className="text-[10px] sm:text-xs font-bold text-sky-600 uppercase tracking-wider truncate">
+              Durasi Terbang
             </p>
-            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-800 mt-1">
+            <h3 className="text-sm sm:text-2xl lg:text-3xl font-extrabold text-slate-800 mt-0.5 sm:mt-1 truncate">
               {formatDurationDisplay(totalAirtimeMinutes)}
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="hidden sm:block text-xs text-slate-500 mt-0.5">
               Akumulasi {totalAirtimeMinutes.toLocaleString()} menit
             </p>
           </div>
-          <div className="p-3 rounded-2xl bg-sky-50 text-sky-600 border border-sky-100 shadow-xs">
-            <Clock className="w-6 h-6" />
+          <div className="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-sky-50 text-sky-600 border border-sky-100 shadow-2xs shrink-0">
+            <Clock className="w-4 h-4 sm:w-6 sm:h-6" />
           </div>
         </div>
 
         {/* Misi vs Latihan */}
-        <div className="bg-white rounded-2xl p-4 sm:p-5 border border-purple-200/70 shadow-sm flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-purple-600 uppercase tracking-wider">
+        <div className="bg-white rounded-2xl p-3 sm:p-5 border border-purple-200/70 shadow-sm flex items-center justify-between">
+          <div className="min-w-0">
+            <p className="text-[10px] sm:text-xs font-bold text-purple-600 uppercase tracking-wider truncate">
               Distribusi Misi
             </p>
-            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-800 mt-1">
-              {missionCount} <span className="text-sm font-semibold text-slate-500">Misi</span> / {trainingCount} <span className="text-sm font-semibold text-slate-500">Latihan</span>
+            <h3 className="text-xs sm:text-xl lg:text-2xl font-extrabold text-slate-800 mt-0.5 sm:mt-1 truncate">
+              {missionCount} Misi / {trainingCount} Latih
             </h3>
-            <p className="text-xs text-purple-600 font-semibold mt-0.5">
+            <p className="hidden sm:block text-xs text-purple-600 font-semibold mt-0.5">
               {missionPercentage}% Penerbangan Misi
             </p>
           </div>
-          <div className="p-3 rounded-2xl bg-purple-50 text-purple-600 border border-purple-100 shadow-xs">
-            <Target className="w-6 h-6" />
+          <div className="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-purple-50 text-purple-600 border border-purple-100 shadow-2xs shrink-0">
+            <Target className="w-4 h-4 sm:w-6 sm:h-6" />
           </div>
         </div>
 
         {/* Status Armada Terdaftar */}
-        <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-sm flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-              Armada Terdaftar
+        <div className="bg-white rounded-2xl p-3 sm:p-5 border border-slate-200/90 shadow-sm flex items-center justify-between">
+          <div className="min-w-0">
+            <p className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider truncate">
+              Armada Aktif
             </p>
-            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-800 mt-1">
+            <h3 className="text-xl sm:text-3xl font-extrabold text-slate-800 mt-0.5 sm:mt-1">
               {drones.length}
             </h3>
-            <p className="text-xs text-slate-500 mt-0.5">Unit drone aktif & terdata</p>
+            <p className="hidden sm:block text-xs text-slate-500 mt-0.5">Unit drone aktif & terdata</p>
           </div>
-          <div className="p-3 rounded-2xl bg-slate-50 text-slate-600 border border-slate-200 shadow-xs">
-            <Cpu className="w-6 h-6" />
+          <div className="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-slate-50 text-slate-600 border border-slate-200 shadow-2xs shrink-0">
+            <Cpu className="w-4 h-4 sm:w-6 sm:h-6" />
           </div>
         </div>
       </div>

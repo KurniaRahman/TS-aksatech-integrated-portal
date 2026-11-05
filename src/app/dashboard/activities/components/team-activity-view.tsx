@@ -369,40 +369,43 @@ export function TeamActivityView({
         </div>
       </div>
 
-      {/* 2. Responsive KPI Summary Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* 2. Responsive KPI Summary Metric Cards (Compact 2x2 on Mobile) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
         {/* Card 1: Total Tasks */}
-        <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-sm flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+        <div className="bg-white rounded-2xl p-3 sm:p-5 border border-slate-200/90 shadow-sm flex items-center justify-between">
+          <div className="min-w-0">
+            <p className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider truncate">
               Total Tugas Tim
             </p>
-            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-800 mt-1">{totalCount}</h3>
-            <p className="text-xs text-slate-500 mt-0.5">{startDate} s/d {endDate}</p>
+            <h3 className="text-xl sm:text-3xl font-extrabold text-slate-800 mt-0.5 sm:mt-1">{totalCount}</h3>
+            <p className="hidden sm:block text-xs text-slate-500 mt-0.5">{startDate} s/d {endDate}</p>
           </div>
-          <div className="p-3 rounded-2xl bg-blue-50 text-[#1F77C5] border border-blue-100 shadow-xs">
-            <ClipboardList className="w-6 h-6" />
+          <div className="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-blue-50 text-[#1F77C5] border border-blue-100 shadow-2xs shrink-0">
+            <ClipboardList className="w-4 h-4 sm:w-6 sm:h-6" />
           </div>
         </div>
 
         {/* Card 2: Completed Tasks */}
-        <div className="bg-white rounded-2xl p-4 sm:p-5 border border-emerald-200/70 shadow-sm">
+        <div className="bg-white rounded-2xl p-3 sm:p-5 border border-emerald-200/70 shadow-sm flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider">
+            <div className="min-w-0">
+              <p className="text-[10px] sm:text-xs font-bold text-emerald-600 uppercase tracking-wider truncate">
                 Tugas Selesai
               </p>
-              <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-800 mt-1">{doneCount}</h3>
-              <p className="text-xs text-emerald-600 font-semibold mt-0.5">
+              <div className="flex items-baseline gap-1.5 mt-0.5 sm:mt-1">
+                <h3 className="text-xl sm:text-3xl font-extrabold text-slate-800">{doneCount}</h3>
+                <span className="text-[10px] sm:text-xs text-emerald-600 font-bold">{completionRate}%</span>
+              </div>
+              <p className="hidden sm:block text-xs text-emerald-600 font-semibold mt-0.5">
                 {completionRate}% Completion Rate
               </p>
             </div>
-            <div className="p-3 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-xs">
-              <CheckCircle2 className="w-6 h-6" />
+            <div className="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-2xs shrink-0">
+              <CheckCircle2 className="w-4 h-4 sm:w-6 sm:h-6" />
             </div>
           </div>
-          <div className="mt-3 pt-3 border-t border-slate-100">
-            <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+          <div className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-slate-100">
+            <div className="w-full bg-slate-100 h-1.5 sm:h-2 rounded-full overflow-hidden">
               <div
                 className="bg-emerald-500 h-full rounded-full transition-all duration-500"
                 style={{ width: `${completionRate}%` }}
@@ -412,30 +415,30 @@ export function TeamActivityView({
         </div>
 
         {/* Card 3: In Progress Tasks */}
-        <div className="bg-white rounded-2xl p-4 sm:p-5 border border-amber-200/70 shadow-sm flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-amber-600 uppercase tracking-wider">
+        <div className="bg-white rounded-2xl p-3 sm:p-5 border border-amber-200/70 shadow-sm flex items-center justify-between">
+          <div className="min-w-0">
+            <p className="text-[10px] sm:text-xs font-bold text-amber-600 uppercase tracking-wider truncate">
               Dalam Proses
             </p>
-            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-800 mt-1">{inProgressCount}</h3>
-            <p className="text-xs text-slate-500 mt-0.5">Sedang dikerjakan engineer</p>
+            <h3 className="text-xl sm:text-3xl font-extrabold text-slate-800 mt-0.5 sm:mt-1">{inProgressCount}</h3>
+            <p className="hidden sm:block text-xs text-slate-500 mt-0.5">Sedang dikerjakan engineer</p>
           </div>
-          <div className="p-3 rounded-2xl bg-amber-50 text-amber-600 border border-amber-100 shadow-xs">
-            <Clock className="w-6 h-6" />
+          <div className="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-amber-50 text-amber-600 border border-amber-100 shadow-2xs shrink-0">
+            <Clock className="w-4 h-4 sm:w-6 sm:h-6" />
           </div>
         </div>
 
         {/* Card 4: Engineers Reporting */}
-        <div className="bg-white rounded-2xl p-4 sm:p-5 border border-indigo-200/70 shadow-sm flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-indigo-600 uppercase tracking-wider">
+        <div className="bg-white rounded-2xl p-3 sm:p-5 border border-indigo-200/70 shadow-sm flex items-center justify-between">
+          <div className="min-w-0">
+            <p className="text-[10px] sm:text-xs font-bold text-indigo-600 uppercase tracking-wider truncate">
               Engineer Terlibat
             </p>
-            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-800 mt-1">{uniqueUsers}</h3>
-            <p className="text-xs text-slate-500 mt-0.5">dari {teamMembers.length} engineer aktif</p>
+            <h3 className="text-xl sm:text-3xl font-extrabold text-slate-800 mt-0.5 sm:mt-1">{uniqueUsers}</h3>
+            <p className="hidden sm:block text-xs text-slate-500 mt-0.5">dari {teamMembers.length} engineer aktif</p>
           </div>
-          <div className="p-3 rounded-2xl bg-indigo-50 text-indigo-600 border border-indigo-100 shadow-xs">
-            <Users className="w-6 h-6" />
+          <div className="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-indigo-50 text-indigo-600 border border-indigo-100 shadow-2xs shrink-0">
+            <Users className="w-4 h-4 sm:w-6 sm:h-6" />
           </div>
         </div>
       </div>

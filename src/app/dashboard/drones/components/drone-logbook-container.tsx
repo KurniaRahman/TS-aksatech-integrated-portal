@@ -599,40 +599,45 @@ export function DroneLogbookContainer({
 
   return (
     <div className="space-y-6">
-      {/* 1. Responsive KPI Summary Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* 1. Responsive KPI Summary Metric Cards (Compact 2x2 on Mobile) */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
         {/* Total Armada */}
-        <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-sm flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-              Total Armada Drone
+        <div className="bg-white rounded-2xl p-3 sm:p-5 border border-slate-200/90 shadow-sm flex items-center justify-between">
+          <div className="min-w-0">
+            <p className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider truncate">
+              Total Armada
             </p>
-            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-800 mt-1">{totalDronesCount}</h3>
-            <p className="text-xs text-slate-500 mt-0.5">Unit terdata di sistem</p>
+            <h3 className="text-xl sm:text-3xl font-extrabold text-slate-800 mt-0.5 sm:mt-1">{totalDronesCount}</h3>
+            <p className="hidden sm:block text-xs text-slate-500 mt-0.5">Unit terdata di sistem</p>
           </div>
-          <div className="p-3 rounded-2xl bg-blue-50 text-[#1F77C5] border border-blue-100 shadow-xs">
-            <Plane className="w-6 h-6" />
+          <div className="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-blue-50 text-[#1F77C5] border border-blue-100 shadow-2xs shrink-0">
+            <Plane className="w-4 h-4 sm:w-6 sm:h-6" />
           </div>
         </div>
 
         {/* Siap Terbang (Ready) */}
-        <div className="bg-white rounded-2xl p-4 sm:p-5 border border-emerald-200/70 shadow-sm">
+        <div className="bg-white rounded-2xl p-3 sm:p-5 border border-emerald-200/70 shadow-sm flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-emerald-600 uppercase tracking-wider">
-                Siap Operasi (Ready)
+            <div className="min-w-0">
+              <p className="text-[10px] sm:text-xs font-bold text-emerald-600 uppercase tracking-wider truncate">
+                Siap Operasi
               </p>
-              <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-800 mt-1">{readyDronesCount}</h3>
-              <p className="text-xs text-emerald-600 font-semibold mt-0.5">
+              <div className="flex items-baseline gap-1.5 mt-0.5 sm:mt-1">
+                <h3 className="text-xl sm:text-3xl font-extrabold text-slate-800">{readyDronesCount}</h3>
+                <span className="text-[10px] sm:text-xs text-emerald-600 font-bold">
+                  {readinessRate}%
+                </span>
+              </div>
+              <p className="hidden sm:block text-xs text-emerald-600 font-semibold mt-0.5">
                 {readinessRate}% Tingkat Kesiapan
               </p>
             </div>
-            <div className="p-3 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-xs">
-              <ShieldCheck className="w-6 h-6" />
+            <div className="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-2xs shrink-0">
+              <ShieldCheck className="w-4 h-4 sm:w-6 sm:h-6" />
             </div>
           </div>
-          <div className="mt-3 pt-3 border-t border-slate-100">
-            <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+          <div className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-slate-100">
+            <div className="w-full bg-slate-100 h-1.5 sm:h-2 rounded-full overflow-hidden">
               <div
                 className="bg-emerald-500 h-full rounded-full transition-all duration-500"
                 style={{ width: `${readinessRate}%` }}
@@ -642,32 +647,32 @@ export function DroneLogbookContainer({
         </div>
 
         {/* Dalam Perbaikan / Servis */}
-        <div className="bg-white rounded-2xl p-4 sm:p-5 border border-amber-200/70 shadow-sm flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-amber-600 uppercase tracking-wider">
-              Dalam Perbaikan
+        <div className="bg-white rounded-2xl p-3 sm:p-5 border border-amber-200/70 shadow-sm flex items-center justify-between">
+          <div className="min-w-0">
+            <p className="text-[10px] sm:text-xs font-bold text-amber-600 uppercase tracking-wider truncate">
+              Perbaikan
             </p>
-            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-800 mt-1">{maintenanceDronesCount}</h3>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <h3 className="text-xl sm:text-3xl font-extrabold text-slate-800 mt-0.5 sm:mt-1">{maintenanceDronesCount}</h3>
+            <p className="hidden sm:block text-xs text-slate-500 mt-0.5">
               {maintenanceDronesCount > 0 ? "Unit dalam penanganan" : "Semua unit siap"}
             </p>
           </div>
-          <div className="p-3 rounded-2xl bg-amber-50 text-amber-600 border border-amber-100 shadow-xs">
-            <Wrench className="w-6 h-6" />
+          <div className="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-amber-50 text-amber-600 border border-amber-100 shadow-2xs shrink-0">
+            <Wrench className="w-4 h-4 sm:w-6 sm:h-6" />
           </div>
         </div>
 
         {/* Total Log Servis Tercatat */}
-        <div className="bg-white rounded-2xl p-4 sm:p-5 border border-indigo-200/70 shadow-sm flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold text-indigo-600 uppercase tracking-wider">
+        <div className="bg-white rounded-2xl p-3 sm:p-5 border border-indigo-200/70 shadow-sm flex items-center justify-between">
+          <div className="min-w-0">
+            <p className="text-[10px] sm:text-xs font-bold text-indigo-600 uppercase tracking-wider truncate">
               Total Log Servis
             </p>
-            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-800 mt-1">{totalLogsCount}</h3>
-            <p className="text-xs text-slate-500 mt-0.5">{startDate} s/d {endDate}</p>
+            <h3 className="text-xl sm:text-3xl font-extrabold text-slate-800 mt-0.5 sm:mt-1">{totalLogsCount}</h3>
+            <p className="hidden sm:block text-xs text-slate-500 mt-0.5">{startDate} s/d {endDate}</p>
           </div>
-          <div className="p-3 rounded-2xl bg-indigo-50 text-indigo-600 border border-indigo-100 shadow-xs">
-            <History className="w-6 h-6" />
+          <div className="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-indigo-50 text-indigo-600 border border-indigo-100 shadow-2xs shrink-0">
+            <History className="w-4 h-4 sm:w-6 sm:h-6" />
           </div>
         </div>
       </div>
