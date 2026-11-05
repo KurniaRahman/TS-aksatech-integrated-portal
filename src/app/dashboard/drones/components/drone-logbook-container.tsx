@@ -740,7 +740,7 @@ export function DroneLogbookContainer({
               onClick={() => openAddLogModal()}
               className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#0B2545] to-[#1F77C5] text-white text-xs font-bold shadow-sm hover:opacity-95 transition-all active:scale-[0.98] flex-1 sm:flex-initial"
             >
-              <Wrench className="w-4 h-4" />
+              <Plus className="w-4 h-4" />
               <span>Catat Perawatan</span>
             </button>
           )}
