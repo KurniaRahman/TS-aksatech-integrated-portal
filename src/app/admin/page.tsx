@@ -143,37 +143,37 @@ export default async function AdminDashboardPage() {
         </div>
       )}
 
-      {/* 1. Header Eksekutif Admin & Live Clock */}
-      <div className="bg-white/95 backdrop-blur-md rounded-3xl p-6 sm:p-8 shadow-[0_4px_25px_-5px_rgba(31,119,197,0.08)] border border-blue-100/90 flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden">
+      {/* 1. Header Eksekutif Admin & Live Clock (Compact Responsive) */}
+      <div className="bg-white/95 backdrop-blur-md rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 shadow-[0_4px_25px_-5px_rgba(31,119,197,0.08)] border border-blue-100/90 flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6 relative overflow-hidden">
         {/* Aksen Top Stripe Gradient Brand Aksa Tech */}
-        <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#0B2545] via-[#1F77C5] to-sky-400"></div>
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#0B2545] via-[#1F77C5] to-sky-400"></div>
 
         {/* Ornamen Grafis Lingkaran Halus */}
         <div className="absolute -right-12 -bottom-12 w-56 h-56 bg-gradient-to-br from-blue-100/40 to-sky-50/20 rounded-full blur-2xl pointer-events-none"></div>
 
-        <div className="space-y-2 relative z-10">
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-[#1F77C5] text-white shadow-xs shadow-blue-500/20 uppercase tracking-wider flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-blue-200" />
+        <div className="space-y-1.5 sm:space-y-2 relative z-10">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-xs font-extrabold bg-[#1F77C5] text-white shadow-xs shadow-blue-500/20 uppercase tracking-wider flex items-center gap-1.5">
+              <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-blue-200" />
               Administrator
             </span>
             <span className="text-xs text-blue-300 font-bold hidden sm:inline">•</span>
-            <span className="text-xs font-semibold text-[#1F77C5] bg-blue-50/80 px-2.5 py-0.5 rounded-full border border-blue-100">
+            <span className="hidden sm:inline text-xs font-semibold text-[#1F77C5] bg-blue-50/80 px-2.5 py-0.5 rounded-full border border-blue-100">
               Sistem HRIS Aksa Tech
             </span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">
+          <h1 className="text-xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">
             {greeting}, <span className="bg-gradient-to-r from-[#0B2545] via-[#1F77C5] to-sky-600 bg-clip-text text-transparent">{session?.user?.name || "Admin"}</span>
           </h1>
 
-          <p className="text-xs sm:text-sm text-slate-500 max-w-xl font-normal leading-relaxed">
+          <p className="hidden sm:block text-xs sm:text-sm text-slate-500 max-w-xl font-normal leading-relaxed">
             Pusat kendali kehadiran dan manajemen operasional karyawan Aksa Tech.
           </p>
         </div>
 
         {/* Live Clock Widget beraksen Kaca & Biru */}
-        <div className="bg-gradient-to-br from-white via-white to-blue-50/40 border border-blue-200/80 rounded-2xl p-4 sm:p-5 shadow-xs min-w-[240px] flex-shrink-0 relative z-10">
+        <div className="bg-gradient-to-br from-white via-white to-blue-50/40 border border-blue-200/80 rounded-xl sm:rounded-2xl p-3 sm:p-5 shadow-xs sm:min-w-[240px] flex-shrink-0 relative z-10">
           <DigitalClock align="right" />
         </div>
       </div>

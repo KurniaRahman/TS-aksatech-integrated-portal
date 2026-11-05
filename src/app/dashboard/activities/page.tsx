@@ -1,6 +1,5 @@
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
-import Link from "next/link"
 import { ActivitiesContainer } from "./components/activities-container"
 import { 
   getActivityLogs, 
@@ -8,7 +7,8 @@ import {
   getTeamMembersForFilter 
 } from "@/actions/activity-logs"
 import { getDateStringWIB } from "@/lib/attendance-utils"
-import { ClipboardList, ArrowLeft, Users, Sparkles } from "lucide-react"
+import { ClipboardList, Users } from "lucide-react"
+import { PageHeader } from "@/components/ui/page-header"
 
 export const metadata = {
   title: "Log Aktivitas Tim & Harian | HRIS Aksa Tech",
@@ -87,56 +87,24 @@ export default async function ActivitiesPage() {
       />
 
       {/* Main Container */}
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8 animate-fade-in pb-8">
-        {/* Header Card */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-200/90 relative overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#0B2545] via-[#1F77C5] to-sky-400" />
-
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-[#1F77C5] border border-blue-200/60">
-                  {isSupervisor ? (
-                    <>
-                      <Users className="w-3.5 h-3.5" />
-                      {userRole === "PM" ? "Project Manager • Monitoring Tim" : "Administrator • Monitoring Tim"}
-                    </>
-                  ) : (
-                    <>
-                      <ClipboardList className="w-3.5 h-3.5" />
-                      Engineer • Laporan Harian
-                    </>
-                  )}
-                </span>
-              </div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight flex items-center gap-2.5">
-                <span className="p-2 rounded-2xl bg-gradient-to-br from-blue-50 to-sky-50 text-[#1F77C5] border border-blue-100/80 shadow-sm">
-                  {isSupervisor ? (
-                    <Users className="w-6 h-6" />
-                  ) : (
-                    <ClipboardList className="w-6 h-6" />
-                  )}
-                </span>
-                {isSupervisor ? "Log Aktivitas Tim" : "Log Aktivitas Harian"}
-              </h1>
-              <p className="text-sm text-slate-500 max-w-2xl leading-relaxed">
-                {isSupervisor
-                  ? "Pantau dan review catatan aktivitas harian serta progres pengerjaan tugas seluruh anggota tim."
-                  : "Catat tugas dan progres pekerjaan yang Anda selesaikan setiap harinya untuk dokumentasi performa kerja."}
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2.5 self-start md:self-center">
-              <Link
-                href="/dashboard"
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-slate-700 text-sm font-semibold border border-slate-200 shadow-sm hover:bg-slate-50 hover:text-[#1F77C5] hover:border-blue-200 transition-all active:scale-[0.98]"
-              >
-                <ArrowLeft className="w-4 h-4 text-slate-400" />
-                <span>Dashboard</span>
-              </Link>
-            </div>
-          </div>
-        </div>
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-7 space-y-5 sm:space-y-6 animate-fade-in pb-8">
+        {/* Seamless Clean Header */}
+        <PageHeader
+          title={isSupervisor ? "Log Aktivitas Tim" : "Log Aktivitas Harian"}
+          icon={isSupervisor ? Users : ClipboardList}
+          roleBadge={
+            isSupervisor
+              ? userRole === "PM"
+                ? "Project Manager"
+                : "Administrator"
+              : "Engineer"
+          }
+          description={
+            isSupervisor
+              ? "Pantau dan review catatan aktivitas harian serta progres pengerjaan tugas seluruh anggota tim."
+              : "Catat tugas dan progres pekerjaan yang Anda selesaikan setiap harinya untuk dokumentasi performa kerja."
+          }
+        />
 
         {/* Activity Log Board View Container */}
         <ActivitiesContainer
