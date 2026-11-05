@@ -47,7 +47,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           id: user.id,
           email: user.email,
           name: user.full_name,
-          role: user.role
+          role: user.role,
+          matra: user.matra
         }
       }
     })
@@ -58,6 +59,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user) {
         token.role = user.role
         token.id = user.id
+        token.matra = user.matra
         token.loginAt = now
       }
 
@@ -75,6 +77,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (session.user) {
         session.user.role = token.role as string
         session.user.id = token.id as string
+        session.user.matra = (token.matra as string) || null
         session.user.loginAt = token.loginAt as number
       }
       return session
