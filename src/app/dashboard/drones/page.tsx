@@ -5,6 +5,7 @@ import { getDrones, getDroneMaintenanceLogs } from "@/actions/drone-maintenance"
 import { getDateStringWIB } from "@/lib/attendance-utils"
 import { Wrench } from "lucide-react"
 import { PageHeader } from "@/components/ui/page-header"
+import { MatraBadge } from "@/components/ui/matra-badge"
 
 export const metadata = {
   title: "Log Perawatan | Aksa Tech Integrated Portal",
@@ -89,6 +90,7 @@ export default async function DroneLogbookPage() {
                 ? "Guest"
                 : "Engineer"
           }
+          extraBadge={userMatra ? <MatraBadge matra={userMatra} size="sm" /> : undefined}
           description="Pencatatan riwayat pemeliharaan, inspeksi berkala, penanganan kendala, dan penggantian suku cadang unit drone."
         />
 

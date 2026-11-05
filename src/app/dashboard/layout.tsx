@@ -59,7 +59,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
           session.user.role === 'MAGANG' ? 'Magang' : 
           session.user.role === 'ADMIN' ? 'Administrator' : 
           'Engineer'
-        } 
+        }
+        userMatra={(session.user as any).matra || null}
       />
 
       <main className="flex-1 overflow-y-auto w-full relative">

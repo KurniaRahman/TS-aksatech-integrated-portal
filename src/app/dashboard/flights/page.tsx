@@ -6,6 +6,7 @@ import { getDroneFlightLogs } from "@/actions/drone-flight"
 import { getDateStringWIB } from "@/lib/attendance-utils"
 import { PlaneTakeoff } from "lucide-react"
 import { PageHeader } from "@/components/ui/page-header"
+import { MatraBadge } from "@/components/ui/matra-badge"
 
 export const metadata = {
   title: "Log Penerbangan | Aksa Tech Integrated Portal",
@@ -90,6 +91,7 @@ export default async function FlightLogPage() {
                 ? "Guest"
                 : "Engineer"
           }
+          extraBadge={userMatra ? <MatraBadge matra={userMatra} size="sm" /> : undefined}
           description="Pencatatan riwayat setiap penerbangan drone: jam take-off, jam landing, total durasi, tipe misi, dan nomor baterai unit."
         />
 

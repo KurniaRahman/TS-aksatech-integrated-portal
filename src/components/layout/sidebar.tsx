@@ -12,19 +12,33 @@ type NavItem = {
   icon: React.ReactNode
 }
 
+const MATRA_LOGOS: Record<string, string> = {
+  "TNI-AU": "/images/matra/tni-au.png",
+  "TNI-AL": "/images/matra/tni-al.png",
+  "TNI-AD": "/images/matra/tni-ad.png",
+}
+
+const getMatraLogo = (matra?: string | null) => {
+  if (!matra) return null
+  return MATRA_LOGOS[matra.trim().toUpperCase()] || null
+}
+
 export function Sidebar({ 
   navItems, 
   userName, 
   userRole = "Karyawan",
+  userMatra,
   hideMobile = false 
 }: { 
   navItems: NavItem[]
   userName: string
   userRole?: string
+  userMatra?: string | null
   hideMobile?: boolean 
 }) {
   const [isOpen, setIsOpen] = useState(false)
   const pathname = usePathname()
+  const matraLogo = getMatraLogo(userMatra)
 
   const userInitials = userName
     ? userName
@@ -47,12 +61,24 @@ export function Sidebar({
       {/* Mobile Top Bar */}
       {!hideMobile && (
         <div className="md:hidden flex items-center justify-between bg-white border-b border-slate-200/80 px-4 py-3 shadow-xs">
-          <Link href={homeHref} className="flex items-center gap-2">
+          <Link href={homeHref} className="flex items-center gap-2 sm:gap-2.5">
             <img 
               src="/logo.png" 
               alt="Aksa Tech" 
               className="h-7 w-auto object-contain" 
             />
+            {matraLogo && (
+              <div className="flex items-center gap-1.5 pl-2 border-l border-slate-200">
+                <img 
+                  src={matraLogo} 
+                  alt={userMatra || "Matra"} 
+                  className="h-6 w-auto object-contain" 
+                />
+                <span className="text-xs font-bold text-slate-700 tracking-tight">
+                  {userMatra}
+                </span>
+              </div>
+            )}
           </Link>
           <button 
             onClick={() => setIsOpen(!isOpen)} 
@@ -79,17 +105,27 @@ export function Sidebar({
         } md:relative md:translate-x-0 ${hideMobile ? 'hidden md:flex' : ''}`}
       >
         {/* Logo Area (Dominan Putih & Menyatu Alami) */}
-        <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+        <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between">
           <Link 
             href={homeHref} 
             onClick={() => setIsOpen(false)}
-            className="transition-transform hover:scale-[1.02] flex items-center justify-center flex-1"
+            className="transition-transform hover:scale-[1.02] flex items-center justify-center gap-2.5 flex-1"
           >
             <img 
               src="/logo.png" 
               alt="Aksa Tech - The Farthest Unmanned Technology" 
-              className="h-9 w-auto object-contain" 
+              className={matraLogo ? "h-7 w-auto object-contain" : "h-9 w-auto object-contain"} 
             />
+            {matraLogo && (
+              <div className="flex items-center gap-1.5 pl-2.5 border-l border-slate-200">
+                <img 
+                  src={matraLogo} 
+                  alt={userMatra || "Matra"} 
+                  className="h-7 w-auto object-contain" 
+                  title={userMatra || "Matra"}
+                />
+              </div>
+            )}
           </Link>
           <button
             onClick={() => setIsOpen(false)}
@@ -134,9 +170,22 @@ export function Sidebar({
         <div className="p-3.5 border-t border-slate-100 bg-slate-50/60">
           <div className="flex items-center justify-between gap-2.5 p-2.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#1F77C5] to-sky-400 text-white font-extrabold text-xs flex items-center justify-center shadow-xs flex-shrink-0 border border-blue-200">
-                {userInitials}
-              </div>
+              {matraLogo ? (
+                <div 
+                  className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200/90 p-1 flex items-center justify-center shadow-xs flex-shrink-0"
+                  title={`Logo ${userMatra}`}
+                >
+                  <img 
+                    src={matraLogo} 
+                    alt={userMatra || "Matra"} 
+                    className="h-full w-full object-contain" 
+                  />
+                </div>
+              ) : (
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#1F77C5] to-sky-400 text-white font-extrabold text-xs flex items-center justify-center shadow-xs flex-shrink-0 border border-blue-200">
+                  {userInitials}
+                </div>
+              )}
               <div className="min-w-0">
                 <p className="text-xs font-bold text-slate-800 truncate leading-snug" title={userName}>
                   {userName}
