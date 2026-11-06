@@ -29,6 +29,7 @@ export function ClientTable({ clients }: { clients: Client[] }) {
 
   // Filter states
   const [statusFilter, setStatusFilter] = useState<string>("ALL")
+  const [roleFilter, setRoleFilter] = useState<string>("ALL")
   const [mobileSearch, setMobileSearch] = useState("")
 
   const openAddForm = () => {
@@ -51,14 +52,20 @@ export function ClientTable({ clients }: { clients: Client[] }) {
 
   const resetFilters = () => {
     setStatusFilter("ALL")
+    setRoleFilter("ALL")
     setMobileSearch("")
   }
 
-  // Filter clients based on status and mobileSearch
+  // Filter clients based on status, role, and mobileSearch
   const filteredClients = useMemo(() => {
     return clients.filter((client) => {
       if (statusFilter === "ACTIVE" && !client.is_active) return false
       if (statusFilter === "INACTIVE" && client.is_active) return false
+      if (roleFilter === "USER" && client.role !== "USER") return false
+      if (roleFilter === "GUEST" && client.role !== "GUEST") return false
+      if (roleFilter === "TNI-AU" && (client.role !== "USER" || client.matra !== "TNI-AU")) return false
+      if (roleFilter === "TNI-AL" && (client.role !== "USER" || client.matra !== "TNI-AL")) return false
+      if (roleFilter === "TNI-AD" && (client.role !== "USER" || client.matra !== "TNI-AD")) return false
       if (mobileSearch) {
         const query = mobileSearch.toLowerCase()
         const matchName = client.full_name.toLowerCase().includes(query)
@@ -67,7 +74,7 @@ export function ClientTable({ clients }: { clients: Client[] }) {
       }
       return true
     })
-  }, [clients, statusFilter, mobileSearch])
+  }, [clients, statusFilter, roleFilter, mobileSearch])
 
   const columns = useMemo<ColumnDef<Client>[]>(
     () => [
@@ -113,19 +120,31 @@ export function ClientTable({ clients }: { clients: Client[] }) {
       {
         accessorKey: "role",
         header: "Peran (Role)",
-        cell: () => (
-          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold border bg-indigo-50 text-indigo-700 border-indigo-200">
-            <Shield className="w-3 h-3" />
-            Guest (External)
-          </span>
-        ),
+        cell: ({ row }) => {
+          const role = row.original.role
+          return role === "USER" ? (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border bg-sky-50 text-sky-800 border-sky-200 shadow-2xs">
+              <Shield className="w-3 h-3 text-[#1F77C5]" />
+              User
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border bg-indigo-50 text-indigo-700 border-indigo-200 shadow-2xs">
+              <Shield className="w-3 h-3 text-indigo-600" />
+              Guest
+            </span>
+          )
+        },
       },
       {
         accessorKey: "matra",
         header: "Matra Akses",
-        cell: ({ row }) => (
-          <MatraBadge matra={row.original.matra} size="sm" />
-        ),
+        cell: ({ row }) => {
+          const isUser = row.original.role === "USER"
+          if (isUser && row.original.matra) {
+            return <MatraBadge matra={row.original.matra} size="sm" />
+          }
+          return <span className="text-slate-400 text-xs font-medium italic">Non-Matra</span>
+        },
       },
       {
         accessorKey: "is_active",
@@ -181,8 +200,25 @@ export function ClientTable({ clients }: { clients: Client[] }) {
 
   const filterControls = (
     <div className="flex items-center gap-2 flex-wrap">
+      {/* Filter Peran & Matra */}
       <div className="flex items-center space-x-1.5">
         <Filter className="w-4 h-4 text-slate-400" />
+        <select
+          value={roleFilter}
+          onChange={(e) => setRoleFilter(e.target.value)}
+          className="text-xs sm:text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white text-slate-700 focus:outline-none focus:border-[#1F77C5] cursor-pointer font-medium"
+        >
+          <option value="ALL">Semua Peran & Matra</option>
+          <option value="USER">Semua User</option>
+          <option value="TNI-AU">User TNI-AU</option>
+          <option value="TNI-AL">User TNI-AL</option>
+          <option value="TNI-AD">User TNI-AD</option>
+          <option value="GUEST">Guest</option>
+        </select>
+      </div>
+
+      {/* Filter Status Aktif */}
+      <div className="flex items-center space-x-1.5">
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
@@ -194,7 +230,7 @@ export function ClientTable({ clients }: { clients: Client[] }) {
         </select>
       </div>
 
-      {(statusFilter !== "ALL" || mobileSearch) && (
+      {(statusFilter !== "ALL" || roleFilter !== "ALL" || mobileSearch) && (
         <button
           onClick={resetFilters}
           className="flex items-center space-x-1 text-xs text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 px-2.5 py-2 rounded-xl transition-colors font-medium"
@@ -286,11 +322,23 @@ export function ClientTable({ clients }: { clients: Client[] }) {
                       <Mail className="w-3.5 h-3.5 mr-2 text-slate-400" />
                       {client.email}
                     </div>
-                    <div className="flex items-center justify-between pt-1">
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold border bg-indigo-50 text-indigo-700 border-indigo-200">
-                        <Shield className="w-3 h-3" />
-                        Guest (External)
-                      </span>
+                    <div className="flex items-center justify-between pt-1 gap-2 flex-wrap">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {client.role === "USER" ? (
+                          <>
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold border bg-sky-50 text-sky-800 border-sky-200">
+                              <Shield className="w-3 h-3 text-[#1F77C5]" />
+                              User
+                            </span>
+                            {client.matra && <MatraBadge matra={client.matra} size="sm" />}
+                          </>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold border bg-indigo-50 text-indigo-700 border-indigo-200">
+                            <Shield className="w-3 h-3 text-indigo-600" />
+                            Guest
+                          </span>
+                        )}
+                      </div>
                       {client.is_active ? (
                         <span className="inline-flex items-center text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full text-[11px] font-semibold">
                           ● Aktif

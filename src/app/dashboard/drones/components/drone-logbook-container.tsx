@@ -85,7 +85,7 @@ export type MaintenanceLogItem = {
 }
 
 interface DroneLogbookContainerProps {
-  userRole: "STAFF" | "PM" | "GUEST"
+  userRole: "STAFF" | "PM" | "GUEST" | "USER"
   userMatra?: string | null
   currentUserId: string
   initialDrones: DroneItem[]
@@ -107,6 +107,7 @@ export function DroneLogbookContainer({
 }: DroneLogbookContainerProps) {
   const isPM = userRole === "PM"
   const isGuest = userRole === "GUEST"
+  const isUser = userRole === "USER"
 
   // Main Tabs: "fleet" (Katalog Armada Drone) vs "logs" (Riwayat Servis Global)
   const [activeTab, setActiveTab] = useState<"fleet" | "logs">("fleet")
@@ -759,7 +760,7 @@ export function DroneLogbookContainer({
               <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mr-1">
                 Matra:
               </span>
-              {isGuest && userMatra ? (
+              {userMatra ? (
                 <div className="flex items-center gap-2">
                   <MatraBadge matra={userMatra} size="md" />
                 </div>
@@ -1215,7 +1216,7 @@ export function DroneLogbookContainer({
               {filteredLogs.map(item => {
                 const dateObj = typeof item.maintenance_date === "string" ? new Date(item.maintenance_date) : item.maintenance_date
                 const isOwner = item.user_id === currentUserId
-                const canEditOrDelete = !isGuest && (isOwner || isPM)
+                const canEditOrDelete = !isGuest && (isOwner || isPM || (isUser && item.drone.matra === userMatra))
 
                 return (
                   <div
@@ -1382,11 +1383,11 @@ export function DroneLogbookContainer({
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center justify-between">
                   <span>1. Pilih Matra *</span>
-                  {isGuest && userMatra && (
-                    <span className="text-[11px] text-slate-400 font-normal">Terkunci untuk akun Guest</span>
+                  {userMatra && (
+                    <span className="text-[11px] text-slate-400 font-normal">Terkunci untuk akun {userMatra}</span>
                   )}
                 </label>
-                {isGuest && userMatra ? (
+                {userMatra ? (
                   <div className="py-1">
                     <MatraBadge matra={userMatra} size="md" />
                   </div>

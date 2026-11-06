@@ -48,7 +48,7 @@ export default async function AdminDashboardPage() {
     _syncResult
   ] = await Promise.all([
     db.user.findMany({
-      where: { is_active: true, role: { not: 'GUEST' } },
+      where: { is_active: true, role: { notIn: ['GUEST', 'USER'] } },
       select: { id: true, full_name: true, role: true, email: true },
       orderBy: { full_name: 'asc' }
     }),

@@ -30,9 +30,15 @@ export function ClientFormDialog({
   const [error, setError] = useState<string | null>(null)
   const [showConfirm, setShowConfirm] = useState(false)
   const [formDataCache, setFormDataCache] = useState<FormData | null>(null)
+  const [selectedRole, setSelectedRole] = useState<string>("USER")
 
   useEffect(() => {
     setError(null)
+    if (clientToEdit) {
+      setSelectedRole(clientToEdit.role || "USER")
+    } else {
+      setSelectedRole("USER")
+    }
   }, [clientToEdit, open])
 
   const onSubmitRequest = (e: React.FormEvent<HTMLFormElement>) => {
@@ -151,33 +157,92 @@ export function ClientFormDialog({
               )}
             </div>
 
+            {/* Pemilihan Jenis Peran Klien */}
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
-                Matra Institusi / Klien
+                Jenis / Peran Klien
               </label>
-              <select
-                name="matra"
-                defaultValue={clientToEdit?.matra || "TNI-AU"}
-                required
-                className="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#1F77C5]/20 focus:border-[#1F77C5] outline-none font-semibold bg-white text-slate-800"
-              >
-                <option value="TNI-AU">TNI-AU (Angkatan Udara)</option>
-                <option value="TNI-AL">TNI-AL (Angkatan Laut)</option>
-                <option value="TNI-AD">TNI-AD (Angkatan Darat)</option>
-              </select>
-              <p className="text-[11px] text-slate-400">
-                Klien hanya dapat memantau katalog armada dan log penerbangan/perawatan pada matra yang dipilih.
-              </p>
+              <div className="grid grid-cols-2 gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setSelectedRole("USER")}
+                  className={`flex flex-col items-start p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                    selectedRole === "USER"
+                      ? "bg-sky-50/90 border-[#1F77C5] ring-2 ring-[#1F77C5]/20 shadow-xs"
+                      : "bg-white border-slate-200 hover:bg-slate-50 text-slate-600"
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5 font-bold text-xs text-slate-900">
+                    <ShieldCheck className={`w-4 h-4 ${selectedRole === "USER" ? "text-[#1F77C5]" : "text-slate-400"}`} />
+                    <span>User (Matra TNI)</span>
+                  </div>
+                  <p className="text-[10px] text-slate-500 mt-1 leading-snug">
+                    Personel resmi TNI (AU/AL/AD) dengan hak akses armada & lambang Matra.
+                  </p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedRole("GUEST")}
+                  className={`flex flex-col items-start p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                    selectedRole === "GUEST"
+                      ? "bg-indigo-50/90 border-indigo-600 ring-2 ring-indigo-500/20 shadow-xs"
+                      : "bg-white border-slate-200 hover:bg-slate-50 text-slate-600"
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5 font-bold text-xs text-slate-900">
+                    <Building2 className={`w-4 h-4 ${selectedRole === "GUEST" ? "text-indigo-600" : "text-slate-400"}`} />
+                    <span>Guest (Mitra)</span>
+                  </div>
+                  <p className="text-[10px] text-slate-500 mt-1 leading-snug">
+                    Perusahaan rekanan, auditor, atau mitra proyek eksternal lain.
+                  </p>
+                </button>
+              </div>
+              <input type="hidden" name="role" value={selectedRole} />
             </div>
 
-            {/* Hak Akses Info Banner (Role otomatis Guest) */}
-            <div className="p-3.5 rounded-2xl bg-indigo-50/70 border border-indigo-200/80 flex items-start space-x-3">
-              <Info className="w-4 h-4 text-indigo-600 mt-0.5 flex-shrink-0" />
-              <div className="text-xs text-indigo-900 leading-relaxed">
-                <span className="font-bold block text-indigo-950">Peran Akun: Guest (Eksternal)</span>
-                Akun ini otomatis terkonfigurasi untuk akses portal tamu, melihat logbook penerbangan drone, dan tidak masuk dalam daftar karyawan aktif atau absensi.
+            {/* Input Matra (Hanya untuk Role USER Matra TNI) */}
+            {selectedRole === "USER" && (
+              <div className="space-y-1.5 animate-fade-in">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center justify-between">
+                  <span>Matra Institusi TNI</span>
+                  <span className="text-[10px] text-blue-600 font-semibold uppercase tracking-wider">Wajib</span>
+                </label>
+                <select
+                  name="matra"
+                  defaultValue={clientToEdit?.matra || "TNI-AU"}
+                  required
+                  className="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-[#1F77C5]/20 focus:border-[#1F77C5] outline-none font-semibold bg-white text-slate-800"
+                >
+                  <option value="TNI-AU">TNI-AU (Angkatan Udara)</option>
+                  <option value="TNI-AL">TNI-AL (Angkatan Laut)</option>
+                  <option value="TNI-AD">TNI-AD (Angkatan Darat)</option>
+                </select>
+                <p className="text-[11px] text-slate-400">
+                  User TNI hanya dapat memantau katalog armada dan logbook milik matra yang dipilih.
+                </p>
               </div>
-            </div>
+            )}
+
+            {/* Hak Akses Info Banner */}
+            {selectedRole === "USER" ? (
+              <div className="p-3.5 rounded-2xl bg-sky-50/80 border border-sky-200 flex items-start space-x-3">
+                <ShieldCheck className="w-4 h-4 text-[#1F77C5] mt-0.5 flex-shrink-0" />
+                <div className="text-xs text-sky-950 leading-relaxed">
+                  <span className="font-bold block text-slate-900">Peran Akun: User (Klien Matra TNI)</span>
+                  Akses terikat langsung dengan armada drone sesuai matra terpilih, dilengkapi visual co-branding resmi TNI dan lambang emblem avatar.
+                </div>
+              </div>
+            ) : (
+              <div className="p-3.5 rounded-2xl bg-indigo-50/70 border border-indigo-200/80 flex items-start space-x-3">
+                <Info className="w-4 h-4 text-indigo-600 mt-0.5 flex-shrink-0" />
+                <div className="text-xs text-indigo-900 leading-relaxed">
+                  <span className="font-bold block text-indigo-950">Peran Akun: Guest (Mitra Eksternal)</span>
+                  Akun pihak perusahaan rekanan atau pengamat eksternal non-TNI. Tidak terikat matra tertentu dan tidak memiliki hak akses data internal karyawan/absensi.
+                </div>
+              </div>
+            )}
 
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
