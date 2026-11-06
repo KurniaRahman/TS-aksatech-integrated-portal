@@ -119,17 +119,23 @@
 }
 
 @layer base {
-  * {
+  *, *::before, *::after {
     @apply border-border outline-ring/50;
+    cursor: default;
   }
   body {
-    @apply bg-background text-foreground select-none cursor-default;
+    @apply bg-background text-foreground;
+    caret-color: transparent;
   }
-  input, textarea, select {
-    @apply select-auto cursor-text;
+  a, a *, button, button *, [role="button"], [role="button"] *, [role="menuitem"], [role="menuitem"] *, [role="tab"], [role="tab"] *, [role="option"], [role="option"] *, label, label *, select, summary {
+    cursor: pointer;
   }
-  a, button, label {
-    @apply cursor-pointer;
+  input, textarea, [contenteditable="true"] {
+    cursor: text;
+    caret-color: auto;
+  }
+  [disabled], [disabled] *, [aria-disabled="true"], [aria-disabled="true"] * {
+    cursor: not-allowed;
   }
   html {
     @apply font-sans;

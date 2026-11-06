@@ -26,6 +26,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         navItems={adminNavItems} 
         userName={session.user.name || session.user.email || "Admin"} 
         userRole="Administrator"
+        userRoleCode="ADMIN"
         userMatra={(session.user as any).matra || null}
       />
       

@@ -20,11 +20,12 @@ export default async function FlightLogPage() {
     redirect("/login")
   }
 
-  // Khusus role STAFF (Engineer/Pilot), PM, dan GUEST
+  // Khusus role STAFF (Engineer/Pilot), PM, GUEST, dan USER
   if (
     session.user.role !== "STAFF" && 
     session.user.role !== "PM" && 
-    session.user.role !== "GUEST"
+    session.user.role !== "GUEST" &&
+    session.user.role !== "USER"
   ) {
     if (session.user.role === "ADMIN") {
       redirect("/admin")
@@ -32,10 +33,11 @@ export default async function FlightLogPage() {
     redirect("/dashboard")
   }
 
-  const userRole = session.user.role as "STAFF" | "PM" | "GUEST"
+  const userRole = session.user.role as "STAFF" | "PM" | "GUEST" | "USER"
   const userMatra = (session.user as any).matra || null
   const isSupervisor = userRole === "PM"
   const isGuest = userRole === "GUEST"
+  const isUser = userRole === "USER"
 
   const now = new Date()
   const todayStr = getDateStringWIB(now)
@@ -84,13 +86,6 @@ export default async function FlightLogPage() {
         <PageHeader
           title="Log Penerbangan"
           icon={PlaneTakeoff}
-          roleBadge={
-            isSupervisor
-              ? "Project Manager"
-              : isGuest
-                ? "Guest"
-                : "Engineer"
-          }
           extraBadge={userMatra ? <MatraBadge matra={userMatra} size="sm" /> : undefined}
           description="Pencatatan riwayat setiap penerbangan drone: jam take-off, jam landing, total durasi, tipe misi, dan nomor baterai unit."
         />

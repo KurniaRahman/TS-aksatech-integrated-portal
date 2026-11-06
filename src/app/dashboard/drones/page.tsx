@@ -19,11 +19,12 @@ export default async function DroneLogbookPage() {
     redirect("/login")
   }
 
-  // Khusus role STAFF (Engineer), PM, dan GUEST (Eksternal Aksa Tech).
+  // Khusus role STAFF (Engineer), PM, GUEST, dan USER
   if (
     session.user.role !== "STAFF" && 
     session.user.role !== "PM" && 
-    session.user.role !== "GUEST"
+    session.user.role !== "GUEST" &&
+    session.user.role !== "USER"
   ) {
     if (session.user.role === "ADMIN") {
       redirect("/admin")
@@ -31,10 +32,11 @@ export default async function DroneLogbookPage() {
     redirect("/dashboard")
   }
 
-  const userRole = session.user.role as "STAFF" | "PM" | "GUEST"
+  const userRole = session.user.role as "STAFF" | "PM" | "GUEST" | "USER"
   const userMatra = (session.user as any).matra || null
   const isSupervisor = userRole === "PM"
   const isGuest = userRole === "GUEST"
+  const isUser = userRole === "USER"
 
   const now = new Date()
   const todayStr = getDateStringWIB(now)
@@ -83,13 +85,6 @@ export default async function DroneLogbookPage() {
         <PageHeader
           title="Log Perawatan"
           icon={Wrench}
-          roleBadge={
-            isSupervisor
-              ? "Project Manager"
-              : isGuest
-                ? "Guest"
-                : "Engineer"
-          }
           extraBadge={userMatra ? <MatraBadge matra={userMatra} size="sm" /> : undefined}
           description="Pencatatan riwayat pemeliharaan, inspeksi berkala, penanganan kendala, dan penggantian suku cadang unit drone."
         />

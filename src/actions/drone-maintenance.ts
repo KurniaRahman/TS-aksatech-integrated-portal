@@ -23,13 +23,18 @@ export async function getDrones(filters?: { matra?: string }) {
   const session = await auth()
   if (!session?.user?.id) throw new Error("Unauthorized")
 
-  if (session.user.role !== "STAFF" && session.user.role !== "PM" && session.user.role !== "GUEST") {
+  if (
+    session.user.role !== "STAFF" && 
+    session.user.role !== "PM" && 
+    session.user.role !== "GUEST" && 
+    session.user.role !== "USER"
+  ) {
     throw new Error("Akses ditolak")
   }
 
-  // Jika role GUEST, batasi ketat berdasarkan matra institusi pengguna
+  // Jika role USER, batasi ketat berdasarkan matra institusi pengguna
   let scopedMatra: string | undefined = undefined
-  if (session.user.role === "GUEST") {
+  if (session.user.role === "USER") {
     const currentUser = await db.user.findUnique({
       where: { id: session.user.id },
       select: { matra: true },
@@ -231,13 +236,18 @@ export async function getDroneMaintenanceLogs(filters?: {
   const session = await auth()
   if (!session?.user?.id) throw new Error("Unauthorized")
 
-  if (session.user.role !== "STAFF" && session.user.role !== "PM" && session.user.role !== "GUEST") {
+  if (
+    session.user.role !== "STAFF" && 
+    session.user.role !== "PM" && 
+    session.user.role !== "GUEST" && 
+    session.user.role !== "USER"
+  ) {
     throw new Error("Akses ditolak")
   }
 
-  // Jika role GUEST, batasi ketat berdasarkan matra institusi pengguna
+  // Jika role USER, batasi ketat berdasarkan matra institusi pengguna
   let scopedMatra: string | undefined = undefined
-  if (session.user.role === "GUEST") {
+  if (session.user.role === "USER") {
     const currentUser = await db.user.findUnique({
       where: { id: session.user.id },
       select: { matra: true },
@@ -320,7 +330,7 @@ export async function createMaintenanceLog(data: {
   const session = await auth()
   if (!session?.user?.id) throw new Error("Unauthorized")
 
-  if (session.user.role !== "STAFF" && session.user.role !== "PM") {
+  if (session.user.role !== "STAFF" && session.user.role !== "PM" && session.user.role !== "USER") {
     throw new Error("Akses ditolak")
   }
 
@@ -333,6 +343,14 @@ export async function createMaintenanceLog(data: {
   })
   if (!drone) {
     throw new Error("Unit drone tidak ditemukan")
+  }
+
+  // Jika role USER, pastikan unit drone sesuai dengan matra pengguna
+  if (session.user.role === "USER") {
+    const userMatra = (session.user as any).matra
+    if (drone.matra !== userMatra) {
+      throw new Error(`Anda hanya berhak mencatat perawatan untuk unit armada ${userMatra}`)
+    }
   }
 
   const dateStr = validateDateString(data.maintenance_date)
@@ -401,13 +419,18 @@ export async function updateMaintenanceLog(
 
   const existing = await db.droneMaintenanceLog.findUnique({
     where: { id },
+    include: { drone: true },
   })
   if (!existing) {
     throw new Error("Catatan perawatan tidak ditemukan")
   }
 
-  // IDOR Protection: Hanya pemilik log atau PM yang berhak mengedit
-  if (existing.user_id !== session.user.id && session.user.role !== "PM") {
+  // IDOR Protection: Hanya pemilik log, PM, atau User TNI pemilik matra unit
+  const isOwner = existing.user_id === session.user.id
+  const isPM = session.user.role === "PM"
+  const isUserMatraOwner = session.user.role === "USER" && existing.drone.matra === (session.user as any).matra
+
+  if (!isOwner && !isPM && !isUserMatraOwner) {
     throw new Error("Akses ditolak untuk mengedit catatan ini")
   }
 

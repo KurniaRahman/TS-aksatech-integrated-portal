@@ -209,11 +209,11 @@ export function ClientTable({ clients }: { clients: Client[] }) {
           className="text-xs sm:text-sm border border-slate-200 rounded-xl px-3 py-2 bg-white text-slate-700 focus:outline-none focus:border-[#1F77C5] cursor-pointer font-medium"
         >
           <option value="ALL">Semua Peran & Matra</option>
-          <option value="USER">Semua User (Matra TNI)</option>
-          <option value="TNI-AU">User TNI-AU Saja</option>
-          <option value="TNI-AL">User TNI-AL Saja</option>
-          <option value="TNI-AD">User TNI-AD Saja</option>
-          <option value="GUEST">Guest (Mitra Eksternal)</option>
+          <option value="USER">Semua User</option>
+          <option value="TNI-AU">User TNI-AU</option>
+          <option value="TNI-AL">User TNI-AL</option>
+          <option value="TNI-AD">User TNI-AD</option>
+          <option value="GUEST">Guest</option>
         </select>
       </div>
 

@@ -12,6 +12,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
   }
 
   const isGuest = session.user.role === "GUEST"
+  const isUser = session.user.role === "USER"
+  const isExternalClient = isGuest || isUser
 
   const canAccessActivityLogs = 
     session.user.role === "STAFF" || 
@@ -20,14 +22,14 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const canAccessDroneLogbook = 
     session.user.role === "STAFF" || 
     session.user.role === "PM" ||
-    isGuest
+    isExternalClient
 
   const activityLogLabel = 
     session.user.role === "PM" 
       ? "Log Aktivitas Tim" 
       : "Log Aktivitas"
 
-  const userNavItems = isGuest
+  const userNavItems = isExternalClient
     ? [
         { name: "Log Perawatan", href: "/dashboard/drones", icon: <Wrench className="h-5 w-5" /> },
         { name: "Log Penerbangan", href: "/dashboard/flights", icon: <PlaneTakeoff className="h-5 w-5" /> },
@@ -54,12 +56,14 @@ export default async function DashboardLayout({ children }: { children: React.Re
         navItems={userNavItems} 
         userName={session.user.name || session.user.email || "Karyawan"} 
         userRole={
-          session.user.role === 'GUEST' ? 'Guest (External)' :
+          session.user.role === 'USER' ? 'User' :
+          session.user.role === 'GUEST' ? 'Guest' :
           session.user.role === 'PM' ? 'Project Manager' : 
           session.user.role === 'MAGANG' ? 'Magang' : 
           session.user.role === 'ADMIN' ? 'Administrator' : 
           'Engineer'
         }
+        userRoleCode={session.user.role}
         userMatra={(session.user as any).matra || null}
       />
 
