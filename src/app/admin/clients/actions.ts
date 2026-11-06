@@ -8,7 +8,7 @@ import { Role } from "@prisma/client"
 export async function getClients() {
   try {
     const clients = await db.user.findMany({
-      where: { role: Role.GUEST },
+      where: { role: { in: [Role.USER, Role.GUEST] } },
       orderBy: { created_at: "desc" },
       select: {
         id: true,
@@ -31,7 +31,9 @@ export async function createClient(formData: FormData) {
     const fullName = formData.get("fullName") as string
     const email = (formData.get("email") as string)?.trim().toLowerCase()
     const password = formData.get("password") as string
-    const matra = (formData.get("matra") as string)?.trim() || "TNI-AU"
+    const roleInput = (formData.get("role") as string)?.toUpperCase()
+    const role = roleInput === "USER" ? Role.USER : Role.GUEST
+    const matra = role === Role.USER ? ((formData.get("matra") as string)?.trim() || "TNI-AU") : null
 
     if (!fullName || !email || !password) {
       return { success: false, error: "Semua kolom wajib diisi" }
@@ -50,7 +52,7 @@ export async function createClient(formData: FormData) {
         full_name: fullName,
         email,
         password_hash: passwordHash,
-        role: Role.GUEST,
+        role,
         matra,
         is_active: true,
       },
@@ -68,7 +70,9 @@ export async function updateClient(id: string, formData: FormData) {
     const fullName = formData.get("fullName") as string
     const email = (formData.get("email") as string)?.trim().toLowerCase()
     const password = formData.get("password") as string
-    const matra = (formData.get("matra") as string)?.trim()
+    const roleInput = (formData.get("role") as string)?.toUpperCase()
+    const role = roleInput === "USER" ? Role.USER : Role.GUEST
+    const matra = role === Role.USER ? ((formData.get("matra") as string)?.trim() || "TNI-AU") : null
 
     if (!fullName || !email) {
       return { success: false, error: "Nama dan Email wajib diisi" }
@@ -88,10 +92,8 @@ export async function updateClient(id: string, formData: FormData) {
     const updateData: any = {
       full_name: fullName,
       email,
-    }
-
-    if (matra) {
-      updateData.matra = matra
+      role,
+      matra,
     }
 
     if (password && password.trim() !== "") {

@@ -39,23 +39,24 @@ async function main() {
     },
   })
 
-  // Inisialisasi Akun Tamu / Klien per Matra (Role GUEST)
-  const defaultGuests = [
-    { email: 'guest.au@aksatech.com', full_name: 'Tamu TNI-AU', matra: 'TNI-AU' },
-    { email: 'guest.al@aksatech.com', full_name: 'Tamu TNI-AL', matra: 'TNI-AL' },
-    { email: 'guest.ad@aksatech.com', full_name: 'Tamu TNI-AD', matra: 'TNI-AD' },
+  // Inisialisasi Akun Klien Matra TNI (Role USER) & Mitra Eksternal (Role GUEST)
+  const defaultClients = [
+    { email: 'guest.au@aksatech.com', full_name: 'Tamu TNI-AU', role: Role.USER, matra: 'TNI-AU' },
+    { email: 'guest.al@aksatech.com', full_name: 'Tamu TNI-AL', role: Role.USER, matra: 'TNI-AL' },
+    { email: 'guest.ad@aksatech.com', full_name: 'Tamu TNI-AD', role: Role.USER, matra: 'TNI-AD' },
+    { email: 'guest@mitra-aksa.com', full_name: 'PT Mitra Solusi Dirgantara', role: Role.GUEST, matra: null },
   ]
 
-  for (const guest of defaultGuests) {
+  for (const client of defaultClients) {
     await prisma.user.upsert({
-      where: { email: guest.email },
-      update: { matra: guest.matra, full_name: guest.full_name },
+      where: { email: client.email },
+      update: { role: client.role, matra: client.matra, full_name: client.full_name },
       create: {
-        email: guest.email,
-        full_name: guest.full_name,
+        email: client.email,
+        full_name: client.full_name,
         password_hash,
-        role: Role.GUEST,
-        matra: guest.matra,
+        role: client.role,
+        matra: client.matra,
       },
     })
   }
