@@ -9,7 +9,7 @@ import { PageHeader } from "@/components/ui/page-header"
 import { MatraBadge } from "@/components/ui/matra-badge"
 
 export const metadata = {
-  title: "Log Penerbangan | Aksa Tech Integrated Portal",
+  title: "Log Penerbangan | Integrated Defense UAV Portal",
   description: "Pencatatan riwayat penerbangan drone, jam take-off, landing, durasi, misi, dan nomor baterai",
 }
 

@@ -78,7 +78,7 @@ export function LoginForm() {
             autoComplete="email"
             onInvalid={handleEmailInvalid}
             onInput={(e) => (e.target as HTMLInputElement).setCustomValidity("")}
-            className="rounded-full pl-12 pr-6 py-6 border-slate-300 bg-white/80 focus:bg-white focus:border-[#1F77C5] focus:ring-2 focus:ring-[#1F77C5]/20 text-slate-800 placeholder:text-slate-400 text-sm sm:text-base shadow-xs transition-all"
+            className="rounded-full pl-12 pr-6 py-6 border-slate-200/90 bg-white/80 focus:bg-white focus:border-[#1F77C5] focus:ring-4 focus:ring-[#1F77C5]/15 text-slate-800 placeholder:text-slate-400 text-sm sm:text-base shadow-2xs transition-all duration-200"
           />
         </div>
 
@@ -96,7 +96,7 @@ export function LoginForm() {
             autoComplete="current-password"
             onInvalid={handlePasswordInvalid}
             onInput={(e) => (e.target as HTMLInputElement).setCustomValidity("")}
-            className="rounded-full pl-12 pr-12 py-6 border-slate-300 bg-white/80 focus:bg-white focus:border-[#1F77C5] focus:ring-2 focus:ring-[#1F77C5]/20 text-slate-800 placeholder:text-slate-400 text-sm sm:text-base shadow-xs transition-all"
+            className="rounded-full pl-12 pr-12 py-6 border-slate-200/90 bg-white/80 focus:bg-white focus:border-[#1F77C5] focus:ring-4 focus:ring-[#1F77C5]/15 text-slate-800 placeholder:text-slate-400 text-sm sm:text-base shadow-2xs transition-all duration-200"
           />
           <button
             type="button"
@@ -122,13 +122,16 @@ export function LoginForm() {
         </div>
       )}
 
-      {/* Submit Button (Full-width on mobile, compact on desktop) */}
-      <div className="pt-1">
+      {/* Submit Button (Glassmorphic Elevated Tactical Button) */}
+      <div className="pt-2">
         <Button 
           type="submit" 
-          className="w-full md:w-[150px] rounded-full bg-[#1F77C5] hover:bg-[#155b99] active:scale-[0.98] py-6 text-base font-bold text-white shadow-md shadow-blue-500/20 transition-all flex items-center justify-center gap-2 group cursor-pointer"
+          className="relative w-full overflow-hidden rounded-full bg-gradient-to-r from-[#1F77C5] via-[#1A6CB3] to-[#12528D] hover:from-[#1766A7] hover:via-[#145792] hover:to-[#0D406E] active:scale-[0.98] py-6 px-6 text-base font-extrabold text-white shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/35 border border-sky-300/30 transition-all duration-300 flex items-center justify-center gap-2.5 group cursor-pointer"
           disabled={loading}
         >
+          {/* Subtle Sheen Shine Animation on Hover */}
+          <span className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-[300%] transition-transform duration-1000 ease-out pointer-events-none" />
+
           {loading ? (
             <>
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -136,8 +139,10 @@ export function LoginForm() {
             </>
           ) : (
             <>
-              <span>Log In</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              <span className="tracking-wide">Log In</span>
+              <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center group-hover:bg-white/30 group-hover:translate-x-1 transition-all duration-200">
+                <ArrowRight className="w-4 h-4 text-white" />
+              </div>
             </>
           )}
         </Button>
