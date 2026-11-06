@@ -8,7 +8,7 @@ import { Role } from "@prisma/client"
 export async function getUsers() {
   try {
     const users = await db.user.findMany({
-      where: { role: { not: 'GUEST' } },
+      where: { role: { notIn: [Role.GUEST, Role.USER] } },
       orderBy: { created_at: 'desc' },
       select: {
         id: true,

@@ -4,7 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { signOut } from "next-auth/react"
-import { Menu, X, LogOut } from "lucide-react"
+import { Menu, X, LogOut, Building2 } from "lucide-react"
 
 type NavItem = {
   name: string
@@ -27,18 +27,24 @@ export function Sidebar({
   navItems, 
   userName, 
   userRole = "Karyawan",
+  userRoleCode,
   userMatra,
   hideMobile = false 
 }: { 
   navItems: NavItem[]
   userName: string
   userRole?: string
+  userRoleCode?: string
   userMatra?: string | null
   hideMobile?: boolean 
 }) {
   const [isOpen, setIsOpen] = useState(false)
   const pathname = usePathname()
   const matraLogo = getMatraLogo(userMatra)
+
+  const isUserTNI = userRoleCode === 'USER' || (!!userMatra && userRoleCode !== 'ADMIN' && userRoleCode !== 'STAFF' && userRoleCode !== 'PM')
+  const isGuestPartner = userRoleCode === 'GUEST'
+  const isClient = isUserTNI || isGuestPartner
 
   const userInitials = userName
     ? userName
@@ -50,9 +56,9 @@ export function Sidebar({
         .toUpperCase()
     : 'AK'
 
-  const homeHref = userRole === 'Administrator' 
+  const homeHref = userRoleCode === 'ADMIN' 
     ? "/admin" 
-    : userRole === 'Guest (External)' 
+    : isClient 
       ? "/dashboard/drones" 
       : "/dashboard"
 
@@ -62,22 +68,29 @@ export function Sidebar({
       {!hideMobile && (
         <div className="md:hidden flex items-center justify-between bg-white border-b border-slate-200/80 px-4 py-3 shadow-xs">
           <Link href={homeHref} className="flex items-center gap-2 sm:gap-2.5">
-            <img 
-              src="/logo.png" 
-              alt="Aksa Tech" 
-              className="h-7 w-auto object-contain" 
-            />
-            {matraLogo && (
-              <div className="flex items-center gap-1.5 pl-2 border-l border-slate-200">
+            {isUserTNI && matraLogo ? (
+              <div className="flex items-center gap-2">
                 <img 
                   src={matraLogo} 
-                  alt={userMatra || "Matra"} 
-                  className="h-6 w-auto object-contain" 
+                  alt={userMatra || "Matra TNI"} 
+                  className="h-8 w-auto object-contain drop-shadow-2xs" 
                 />
-                <span className="text-xs font-bold text-slate-700 tracking-tight">
+                <span className="text-sm font-extrabold text-slate-900 tracking-tight">
                   {userMatra}
                 </span>
               </div>
+            ) : isGuestPartner ? (
+              <div className="flex items-center gap-3" title="Matra TNI (AU • AL • AD)">
+                <img src="/images/matra/tni-au.png" alt="TNI-AU" className="h-7 w-auto object-contain drop-shadow-2xs" title="TNI Angkatan Udara" />
+                <img src="/images/matra/tni-al.png" alt="TNI-AL" className="h-7 w-auto object-contain drop-shadow-2xs" title="TNI Angkatan Laut" />
+                <img src="/images/matra/tni-ad.png" alt="TNI-AD" className="h-7 w-auto object-contain drop-shadow-2xs" title="TNI Angkatan Darat" />
+              </div>
+            ) : (
+              <img 
+                src="/logo.png" 
+                alt="Aksa Tech" 
+                className="h-7 w-auto object-contain" 
+              />
             )}
           </Link>
           <button 
@@ -104,27 +117,59 @@ export function Sidebar({
           !hideMobile && isOpen ? 'translate-x-0' : '-translate-x-full'
         } md:relative md:translate-x-0 ${hideMobile ? 'hidden md:flex' : ''}`}
       >
-        {/* Logo Area (Dominan Putih & Menyatu Alami) */}
+        {/* Logo Area */}
         <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between">
           <Link 
             href={homeHref} 
             onClick={() => setIsOpen(false)}
-            className="transition-transform hover:scale-[1.02] flex items-center justify-center gap-2.5 flex-1"
+            className="transition-transform hover:scale-[1.02] flex items-center justify-center gap-3 flex-1"
           >
-            <img 
-              src="/logo.png" 
-              alt="Aksa Tech - The Farthest Unmanned Technology" 
-              className={matraLogo ? "h-7 w-auto object-contain" : "h-9 w-auto object-contain"} 
-            />
-            {matraLogo && (
-              <div className="flex items-center gap-1.5 pl-2.5 border-l border-slate-200">
+            {isUserTNI && matraLogo ? (
+              <div className="flex items-center justify-center gap-3">
                 <img 
                   src={matraLogo} 
-                  alt={userMatra || "Matra"} 
-                  className="h-7 w-auto object-contain" 
-                  title={userMatra || "Matra"}
+                  alt={userMatra || "Matra TNI"} 
+                  className="h-10 w-auto object-contain drop-shadow-xs" 
+                />
+                <div className="flex flex-col text-left">
+                  <span className="text-base font-extrabold text-slate-900 tracking-tight leading-none">
+                    {userMatra}
+                  </span>
+                  <span className="text-[10px] font-bold text-[#1F77C5] tracking-wider uppercase mt-1">
+                    Portal Terpadu
+                  </span>
+                </div>
+              </div>
+            ) : isGuestPartner ? (
+              <div 
+                className="flex items-center justify-center gap-4 py-1 px-1 flex-1" 
+                title="Matra TNI (AU • AL • AD)"
+              >
+                <img 
+                  src="/images/matra/tni-au.png" 
+                  alt="TNI-AU" 
+                  className="h-10 w-auto object-contain drop-shadow-xs hover:scale-110 transition-transform" 
+                  title="TNI Angkatan Udara"
+                />
+                <img 
+                  src="/images/matra/tni-al.png" 
+                  alt="TNI-AL" 
+                  className="h-10 w-auto object-contain drop-shadow-xs hover:scale-110 transition-transform" 
+                  title="TNI Angkatan Laut"
+                />
+                <img 
+                  src="/images/matra/tni-ad.png" 
+                  alt="TNI-AD" 
+                  className="h-10 w-auto object-contain drop-shadow-xs hover:scale-110 transition-transform" 
+                  title="TNI Angkatan Darat"
                 />
               </div>
+            ) : (
+              <img 
+                src="/logo.png" 
+                alt="Aksa Tech - The Farthest Unmanned Technology" 
+                className="h-9 w-auto object-contain" 
+              />
             )}
           </Link>
           <button
@@ -170,7 +215,7 @@ export function Sidebar({
         <div className="p-3.5 border-t border-slate-100 bg-slate-50/60">
           <div className="flex items-center justify-between gap-2.5 p-2.5 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
             <div className="flex items-center gap-2.5 min-w-0">
-              {matraLogo ? (
+              {isUserTNI && matraLogo ? (
                 <div 
                   className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-200/90 p-1 flex items-center justify-center shadow-xs flex-shrink-0"
                   title={`Logo ${userMatra}`}
@@ -180,6 +225,13 @@ export function Sidebar({
                     alt={userMatra || "Matra"} 
                     className="h-full w-full object-contain" 
                   />
+                </div>
+              ) : isGuestPartner ? (
+                <div 
+                  className="w-10 h-10 rounded-xl bg-indigo-50/80 border border-indigo-200/90 p-2 flex items-center justify-center shadow-xs flex-shrink-0"
+                  title="Mitra Proyek Eksternal"
+                >
+                  <Building2 className="w-5 h-5 text-indigo-700" />
                 </div>
               ) : (
                 <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#1F77C5] to-sky-400 text-white font-extrabold text-xs flex items-center justify-center shadow-xs flex-shrink-0 border border-blue-200">
